@@ -1,15 +1,16 @@
+import { Footer } from "./Footer";
+import { Header } from "./Header";
+
 type LayoutProps = {
-	children: React.ReactNode;
+  children: React.ReactNode;
 };
 
 export function AppLayout({ children }: LayoutProps) {
-	return (
-		<html lang="en">
-			<head>
-				<meta charSet="utf-8" />
-				<meta name="viewport" content="width=device-width, initial-scale=1" />
-			</head>
-			<body>{children}</body>
-		</html>
-	);
+  return (
+    <>
+      <Header />
+      <body>{children}</body>
+      <Footer />
+    </>
+  );
 }
