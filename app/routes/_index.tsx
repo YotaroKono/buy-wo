@@ -10,10 +10,7 @@ export const meta: MetaFunction = () => {
 export default function Index() {
 	return (
 		<div>
-			<h1>Welcome to Remix!</h1>
-			<p>
-				Edit this file at <code>app/routes/index.tsx</code>
-			</p>
+			<h1>初期ページ</h1>
 		</div>
 	);
 }
