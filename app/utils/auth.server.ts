@@ -37,10 +37,10 @@ export const authenticator = new Authenticator<User>(sessionStorage);
 
 const auth0Strategy = new Auth0Strategy(
   {
-    callbackURL: "https://example.com/auth/auth0/callback",
-    clientID: "AUTH0_CLIENT_ID",
-    clientSecret: "AUTH0_CLIENT_SECRET",
-    domain: "DOMAIN",
+    callbackURL: process.env.AUTH0_CALLBACK_URL,
+    clientID: process.env.AUTH0_CLIENT_ID,
+    clientSecret: process.env.AUTH0_CLIENT_SECRET,
+    domain: process.env.AUTH0_DOMAIN,
   },
   async ({ accessToken, refreshToken, extraParams, profile }) => {
     console.log("profile", profile);
