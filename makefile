@@ -5,3 +5,7 @@ check:
 .PHONY: no-c
 no-c:
 	docker compose build --no-cache
+
+.PHONY: exec
+exec:
+	docker exec -it web_front /bin/bash
