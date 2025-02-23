@@ -1,4 +1,4 @@
-import { createCookieSessionStorage } from "@remix-run/node";
+import { createCookieSessionStorage, redirect } from "@remix-run/node";
 import { Authenticator } from "remix-auth";
 import { Auth0Strategy } from "remix-auth-auth0";
 
@@ -7,6 +7,9 @@ import { Auth0Strategy } from "remix-auth-auth0";
 
 type User = {
   email: string;
+  accessToken: string;
+  refreshToken?: string;
+  expiresAt: number;
 };
 
 export let sessionStorage = createCookieSessionStorage({
@@ -23,9 +26,17 @@ export let sessionStorage = createCookieSessionStorage({
 export const { getSession, commitSession, destroySession } = sessionStorage;
 
 const UserService = {
-  async findOrCreate(data: { email: string }): Promise<User> {
+  async findOrCreate(data: {
+    email: string;
+    accessToken: string;
+    refreshToken?: string;
+    expiresIn: number;
+  }): Promise<User> {
     return {
       email: data.email,
+      accessToken: data.accessToken,
+      refreshToken: data.refreshToken,
+      expiresAt: Date.now() + data.expiresIn * 1000,
     };
   },
 };
@@ -46,11 +57,88 @@ const auth0Strategy = new Auth0Strategy(
     }
     const user = await UserService.findOrCreate({
       email: profile.emails[0].value,
+      accessToken,
+      refreshToken,
+      expiresIn: extraParams.expires_in,
     });
-    const session = await getSession();
-    session.set("user", user);
+
     return user;
   }
 );
 
 authenticator.use(auth0Strategy);
+
+// トークン更新用の関数
+async function refreshAccessToken(refreshToken: string): Promise<{
+  accessToken: string;
+  expiresIn: number;
+}> {
+  const response = await fetch(
+    `https://${process.env.AUTH0_DOMAIN}/oauth/token`,
+    {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type: "refresh_token",
+        client_id: process.env.AUTH0_CLIENT_ID!,
+        client_secret: process.env.AUTH0_CLIENT_SECRET!,
+        refresh_token: refreshToken,
+      }),
+    }
+  );
+
+  const data = await response.json();
+  return {
+    accessToken: data.access_token,
+    expiresIn: data.expires_in,
+  };
+}
+
+// TODO: 要見直し
+// アクセストークンの取得と必要に応じた更新を行うユーティリティ
+export async function getValidAccessToken(request: Request): Promise<string> {
+  const session = await getSession(request.headers.get("Cookie"));
+  const user = session.get("user") as User | undefined;
+
+  if (!user) {
+    throw redirect("/login");
+  }
+
+  // トークンの有効期限チェック（5分の余裕を持たせる）
+  const isExpiringSoon = user.expiresAt - Date.now() < 5 * 60 * 1000;
+
+  if (isExpiringSoon && user.refreshToken) {
+    const { accessToken, expiresIn } = await refreshAccessToken(
+      user.refreshToken
+    );
+
+    // セッションの更新
+    const newUser: User = {
+      ...user,
+      accessToken,
+      expiresAt: Date.now() + expiresIn * 1000,
+    };
+    session.set("user", newUser);
+
+    // セッションの保存
+    throw redirect(request.url, {
+      headers: {
+        "Set-Cookie": await commitSession(session),
+      },
+    });
+  }
+
+  return user.accessToken;
+}
+
+// 要保護ルートのためのミドルウェア
+export async function requireUser(request: Request) {
+  const session = await getSession(request.headers.get("Cookie"));
+  const user = session.get("user") as User | undefined;
+
+  if (!user) {
+    throw redirect("/login");
+  }
+
+  return user;
+}

@@ -7,6 +7,7 @@ import { authenticator } from "~/utils/auth.server";
 // export const loader = () => redirect("/hoge");
 
 export const action = ({ request }: ActionFunctionArgs) => {
+  console.log("request", request);
   return authenticator.authenticate("auth0", request);
 };
 
