@@ -24,9 +24,6 @@ export const { getSession, commitSession, destroySession } = sessionStorage;
 
 const UserService = {
   async findOrCreate(data: { email: string }): Promise<User> {
-    // ここでユーザーを検索または作成するロジックを実装
-    // 例: データベースとの連携など
-
     return {
       email: data.email,
     };
@@ -47,7 +44,12 @@ const auth0Strategy = new Auth0Strategy(
     if (!profile.emails || profile.emails.length === 0) {
       throw new Error("Email is required");
     }
-    return UserService.findOrCreate({ email: profile.emails[0].value });
+    const user = await UserService.findOrCreate({
+      email: profile.emails[0].value,
+    });
+    const session = await getSession();
+    session.set("user", user);
+    return user;
   }
 );
 
