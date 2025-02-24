@@ -7,6 +7,8 @@ const envSchema = z.object({
   AUTH0_CLIENT_ID: z.string().min(1),
   AUTH0_CLIENT_SECRET: z.string().min(1),
   AUTH0_DOMAIN: z.string().min(1),
+  AUTH0_LOGOUT_URL: z.string().min(1),
+  AUTH0_RETURN_TO_URL: z.string().min(1),
 });
 
 declare global {
