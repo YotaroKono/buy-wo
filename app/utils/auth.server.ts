@@ -1,16 +1,10 @@
 import { createCookieSessionStorage, redirect } from "@remix-run/node";
 import { Authenticator } from "remix-auth";
 import { Auth0Strategy } from "remix-auth-auth0";
+import type { User } from "./types/user";
 
 // Authenticatorのインスタンスを作成し、ストラテジーが返す型と
 // セッションに保存される型のジェネリックを渡します
-
-type User = {
-  email: string;
-  accessToken: string;
-  refreshToken?: string;
-  expiresAt: number;
-};
 
 export let sessionStorage = createCookieSessionStorage({
   cookie: {
@@ -98,7 +92,8 @@ async function refreshAccessToken(refreshToken: string): Promise<{
 // アクセストークンの取得と必要に応じた更新を行うユーティリティ
 export async function getValidAccessToken(request: Request): Promise<string> {
   const session = await getSession(request.headers.get("Cookie"));
-  const user = session.get("user") as User | undefined;
+  const user = session.get("user") as User;
+  console.log("@@@@@@@@@@@@@@@@@@@@@@@", user);
 
   if (!user) {
     throw redirect("/login");
