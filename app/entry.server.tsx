@@ -48,6 +48,7 @@ function handleBotRequest(
 ) {
   return new Promise((resolve, reject) => {
     let shellRendered = false;
+    let currentStatusCode = responseStatusCode;
     const { pipe, abort } = renderToPipeableStream(
       <RemixServer
         context={remixContext}
@@ -75,7 +76,7 @@ function handleBotRequest(
           reject(error);
         },
         onError(error: unknown) {
-          responseStatusCode = 500;
+          currentStatusCode = 500;
           // Log streaming rendering errors from inside the shell.  Don't log
           // errors encountered during initial shell rendering since they'll
           // reject and get logged in handleDocumentRequest.

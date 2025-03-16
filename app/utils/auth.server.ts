@@ -6,7 +6,7 @@ import type { User } from "./types/user";
 // Authenticatorのインスタンスを作成し、ストラテジーが返す型と
 // セッションに保存される型のジェネリックを渡します
 
-export let sessionStorage = createCookieSessionStorage({
+export const sessionStorage = createCookieSessionStorage({
   cookie: {
     name: "_session", // use any name you want here
     sameSite: "lax", // this helps with CSRF
@@ -74,8 +74,8 @@ async function refreshAccessToken(refreshToken: string): Promise<{
       headers: { "content-type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
         grant_type: "refresh_token",
-        client_id: process.env.AUTH0_CLIENT_ID!,
-        client_secret: process.env.AUTH0_CLIENT_SECRET!,
+        client_id: process.env.AUTH0_CLIENT_ID ?? "",
+        client_secret: process.env.AUTH0_CLIENT_SECRET ?? "",
         refresh_token: refreshToken,
       }),
     }

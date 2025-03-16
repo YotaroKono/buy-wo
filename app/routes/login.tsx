@@ -14,7 +14,7 @@ export const action = ({ request }: ActionFunctionArgs) => {
 export default function Login() {
   return (
     <Form action="/login" method="post">
-      <button>Login with Auth0</button>
+      <button type="submit">Login with Auth0</button>
     </Form>
   );
 }
