@@ -1,8 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@plugin "daisyui";
 
 html,
 body {
-	@apply bg-gray-200 text-gray-800;
+  @apply bg-gray-200 text-gray-800;
 }
