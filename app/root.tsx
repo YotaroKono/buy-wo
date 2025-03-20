@@ -1,14 +1,21 @@
-import type { LinksFunction } from "@remix-run/node";
+import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
 import {
 	Links,
 	Meta,
 	Outlet,
 	Scripts,
 	ScrollRestoration,
+	useLoaderData,
 } from "@remix-run/react";
 
 import { AppLayout } from "./components/AppLayout";
 import styles from "./tailwind.css?url";
+import { checkAuthStatus } from "./utils/auth.server";
+
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+	const authStatus = await checkAuthStatus(request);
+	return authStatus;
+};
 
 export const links: LinksFunction = () => [
 	{ rel: "stylesheet", href: styles },
@@ -35,7 +42,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 			</head>
 			<body>
 				<ScrollRestoration />
-				<AppLayout>{children}</AppLayout>
+				{children}
 				<Scripts />
 			</body>
 		</html>
@@ -43,5 +50,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-	return <Outlet />;
+	const authData = useLoaderData<typeof loader>();
+
+	return (
+		<AppLayout authData={authData}>
+			<Outlet />
+		</AppLayout>
+	);
 }

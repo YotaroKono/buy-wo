@@ -1,7 +1,28 @@
-export const Header = () => {
+import { LoaderFunctionArgs } from "@remix-run/node";
+import { Form, useLoaderData } from "@remix-run/react";
+import { checkAuthStatus } from "~/utils/auth.server";
+
+type HeaderProps = {
+	isAuthenticated: boolean;
+	user: any; // TODO: ユーザー情報の型を定義する
+};
+
+export const Header = ({ isAuthenticated, user }: HeaderProps) => {
 	return (
 		<header className="bg-gray-800 text-white p-4 text-center">
-			<p>ヘッダーです</p>
+			<div className="flex justify-end">
+				<div>
+					{isAuthenticated ? (
+						<div>会員済み</div>
+					) : (
+						<Form action="/login" method="post">
+							<button type="submit" className="btn btn-accent">
+								ログイン・会員登録
+							</button>
+						</Form>
+					)}
+				</div>
+			</div>
 		</header>
 	);
 };

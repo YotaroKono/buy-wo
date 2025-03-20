@@ -11,6 +11,7 @@ export const action = ({ request }: ActionFunctionArgs) => {
 	return authenticator.authenticate("auth0", request);
 };
 
+// TODO: ログイン機能はヘッダーで実装する・ログイン後のリダイレクトはホーム画面にしてモーダルを表示する
 export default function Login() {
 	return (
 		<Form action="/login" method="post">

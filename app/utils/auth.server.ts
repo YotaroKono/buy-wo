@@ -137,3 +137,13 @@ export async function requireUser(request: Request) {
 
 	return user;
 }
+
+export async function checkAuthStatus(request: Request) {
+	const session = await getSession(request.headers.get("Cookie"));
+	const user = session.get("user") as User | undefined;
+
+	return {
+		isAuthenticated: !!user,
+		user,
+	};
+}

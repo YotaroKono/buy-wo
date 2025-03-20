@@ -3,12 +3,13 @@ import { Header } from "./Header";
 
 type LayoutProps = {
 	children: React.ReactNode;
+	authData: { isAuthenticated: boolean; user: any };
 };
 
-export function AppLayout({ children }: LayoutProps) {
+export function AppLayout({ children, authData }: LayoutProps) {
 	return (
 		<>
-			<Header />
+			<Header isAuthenticated={authData.isAuthenticated} user={authData.user} />
 			<body>{children}</body>
 			<Footer />
 		</>
