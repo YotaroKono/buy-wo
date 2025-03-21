@@ -3,10 +3,7 @@ import { Form } from "@remix-run/react";
 import { authenticator } from "~/utils/auth.server";
 
 export const meta: MetaFunction = () => {
-	return [
-		{ title: "New Remix App" },
-		{ name: "description", content: "Welcome to Remix!" },
-	];
+	return [{ title: "New Remix App" }, { name: "description", content: "Welcome to Remix!" }];
 };
 
 export const action = ({ request }: ActionFunctionArgs) => {

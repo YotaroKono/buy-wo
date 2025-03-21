@@ -1,12 +1,5 @@
 import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
-import {
-	Links,
-	Meta,
-	Outlet,
-	Scripts,
-	ScrollRestoration,
-	useLoaderData,
-} from "@remix-run/react";
+import { Links, Meta, Outlet, Scripts, ScrollRestoration, useLoaderData } from "@remix-run/react";
 
 import { AppLayout } from "./components/AppLayout";
 import styles from "./tailwind.css?url";
