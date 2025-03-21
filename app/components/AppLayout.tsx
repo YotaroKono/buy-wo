@@ -1,9 +1,10 @@
+import type { User } from "~/utils/types/user";
 import { Footer } from "./Footer";
 import { Header } from "./Header";
 
 type LayoutProps = {
 	children: React.ReactNode;
-	authData: { isAuthenticated: boolean; user: any };
+	authData: { isAuthenticated: boolean; user: User };
 };
 
 export function AppLayout({ children, authData }: LayoutProps) {

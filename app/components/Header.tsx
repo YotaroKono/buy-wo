@@ -1,10 +1,11 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
 import { Form, useLoaderData } from "@remix-run/react";
 import { checkAuthStatus } from "~/utils/auth.server";
+import type { User } from "~/utils/types/user";
 
 type HeaderProps = {
 	isAuthenticated: boolean;
-	user: any; // TODO: ユーザー情報の型を定義する
+	user: User; // TODO: ユーザー情報の型を定義する
 };
 
 export const Header = ({ isAuthenticated, user }: HeaderProps) => {
