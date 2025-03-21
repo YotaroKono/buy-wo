@@ -4,7 +4,7 @@ import { Header } from "./Header";
 
 type LayoutProps = {
 	children: React.ReactNode;
-	authData: { isAuthenticated: boolean; user: User };
+	authData: { isAuthenticated: boolean; user: User | null };
 };
 
 export function AppLayout({ children, authData }: LayoutProps) {

@@ -5,7 +5,7 @@ import type { User } from "~/utils/types/user";
 
 type HeaderProps = {
 	isAuthenticated: boolean;
-	user: User; // TODO: ユーザー情報の型を定義する
+	user: User | null;
 };
 
 export const Header = ({ isAuthenticated, user }: HeaderProps) => {
