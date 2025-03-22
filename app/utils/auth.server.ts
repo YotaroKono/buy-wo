@@ -3,9 +3,6 @@ import { Authenticator } from "remix-auth";
 import { Auth0Strategy } from "remix-auth-auth0";
 import type { User } from "./types/user";
 
-// Authenticatorのインスタンスを作成し、ストラテジーが返す型と
-// セッションに保存される型のジェネリックを渡します
-
 export const sessionStorage = createCookieSessionStorage({
   cookie: {
     name: "_session", // use any name you want here
@@ -20,7 +17,7 @@ export const sessionStorage = createCookieSessionStorage({
 export const { getSession, commitSession, destroySession } = sessionStorage;
 
 const UserService = {
-  async findOrCreate(data: {
+  async convertToUserObject(data: {
     email: string;
     accessToken: string;
     refreshToken?: string;
@@ -49,7 +46,7 @@ const auth0Strategy = new Auth0Strategy(
     if (!profile.emails || profile.emails.length === 0) {
       throw new Error("Email is required");
     }
-    const user = await UserService.findOrCreate({
+    const user = await UserService.convertToUserObject({
       email: profile.emails[0].value,
       accessToken,
       refreshToken,
@@ -138,6 +135,7 @@ export async function requireUser(request: Request) {
   return user;
 }
 
+// 認証状態のチェック
 export async function checkAuthStatus(request: Request) {
   const session = await getSession(request.headers.get("Cookie"));
   const user = session.get("user") as User | undefined;
