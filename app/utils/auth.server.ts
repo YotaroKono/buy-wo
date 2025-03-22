@@ -2,6 +2,8 @@ import { createCookieSessionStorage, redirect } from "@remix-run/node";
 import { Authenticator } from "remix-auth";
 import { Auth0Strategy } from "remix-auth-auth0";
 import type { User } from "./types/user";
+import jwt from "jsonwebtoken";
+import { getSupabaseClient } from "./supabase.server";
 
 export const sessionStorage = createCookieSessionStorage({
   cookie: {
@@ -16,18 +18,72 @@ export const sessionStorage = createCookieSessionStorage({
 
 export const { getSession, commitSession, destroySession } = sessionStorage;
 
+function createSupabaseToken(userId: string): string {
+  const payload = {
+    userId,
+    exp: Math.floor(Date.now() / 1000) + 60 * 60, // 1時間の有効期限
+  };
+  if (!userId){
+    throw new Error("userIdがありません");
+  }
+  return jwt.sign(payload, process.env.SUPABASE_JWT_SECRET);
+}
+
+
+
 const UserService = {
   async convertToUserObject(data: {
+    userId: string;
     email: string;
     accessToken: string;
     refreshToken?: string;
     expiresIn: number;
+    supabaseToken?: string;
+    name?: string;
+    picture?: string;
   }): Promise<User> {
+    const supabaseToken = createSupabaseToken(data.userId);
+    const supabase = getSupabaseClient(data.supabaseToken ?? supabaseToken);
+    // Supabaseのuserテーブルでユーザーを検索
+    const { data: existingUser, error: searchError } = await supabase
+        .from("user")
+        .select("*")
+        .eq("auth0_id", data.userId)
+        .single();
+        
+      if (searchError && searchError.code !== "PGRST116") { // PGRST116は「結果が見つからない」エラー
+        console.error("Error searching for user:", searchError);
+      }
+      
+      // ユーザーが存在しない場合は新規作成
+      if (!existingUser) {
+        const { data: newUser, error: insertError } = await supabase
+          .from("user")
+          .insert([
+            {
+              user_id: data.userId,
+              email: data.email,
+              name: data.name || data.email.split('@')[0], // 名前がない場合はメールアドレスから生成
+              picuture_url: data.picture,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            }
+          ])
+          .select()
+          .single();
+          
+        if (insertError) {
+          console.error("Error creating new user:", insertError);
+        }
+        console.log("newUser", newUser);
+      }
     return {
+      userId: data.userId,
       email: data.email,
       accessToken: data.accessToken,
       refreshToken: data.refreshToken,
       expiresAt: Date.now() + data.expiresIn * 1000,
+      supabaseToken: supabaseToken,
     };
   },
 };
@@ -46,11 +102,17 @@ const auth0Strategy = new Auth0Strategy(
     if (!profile.emails || profile.emails.length === 0) {
       throw new Error("Email is required");
     }
+    if (!profile.id) {
+      throw new Error("User ID is required");
+    }
     const user = await UserService.convertToUserObject({
       email: profile.emails[0].value,
       accessToken,
       refreshToken,
       expiresIn: extraParams.expires_in,
+      userId: profile.id,
+      name: profile.displayName,
+      picture: profile.photos?.[0]?.value
     });
 
     return user;
