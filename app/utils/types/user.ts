@@ -3,4 +3,6 @@ export type User = {
 	accessToken: string;
 	refreshToken?: string;
 	expiresAt: number;
-};
+	supabaseToken?: string;
+	userId: string;
+  }
