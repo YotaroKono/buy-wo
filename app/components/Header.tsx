@@ -1,6 +1,5 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
 import { Form, useLoaderData } from "@remix-run/react";
-import { checkAuthStatus } from "~/utils/auth.server";
 import type { User } from "~/utils/types/user";
 
 type HeaderProps = {
