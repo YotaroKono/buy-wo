@@ -44,11 +44,14 @@ const UserService = {
   }): Promise<User> {
     const supabaseToken = createSupabaseToken(data.userId);
     const supabase = getSupabaseClient(data.supabaseToken ?? supabaseToken);
+    if (!supabase) {
+      throw new Error("Supabase clientの生成に失敗しました");
+    }
     // Supabaseのuserテーブルでユーザーを検索
     const { data: existingUser, error: searchError } = await supabase
         .from("user")
         .select("*")
-        .eq("auth0_id", data.userId)
+        .eq("user_id", data.userId)
         .single();
         
       if (searchError && searchError.code !== "PGRST116") { // PGRST116は「結果が見つからない」エラー
@@ -64,7 +67,7 @@ const UserService = {
               user_id: data.userId,
               email: data.email,
               name: data.name || data.email.split('@')[0], // 名前がない場合はメールアドレスから生成
-              picuture_url: data.picture,
+              picture_url: data.picture,
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
             }
