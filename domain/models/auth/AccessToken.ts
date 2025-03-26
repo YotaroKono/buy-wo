@@ -7,7 +7,7 @@ export class AccessToken {
       this.expiresAt = expiresAt;
     }
   
-    create(token: string, expiresInSeconds: number): AccessToken {
+    static create(token: string, expiresInSeconds: number): AccessToken {
       if (!token || token.trim() === '') {
         throw new Error('アクセストークンは空にできません');
       }
@@ -20,7 +20,7 @@ export class AccessToken {
       return new AccessToken(token, expiresAt);
     }
   
-    restore(token: string, expiresAtTimestamp: number): AccessToken {
+    static restore(token: string, expiresAtTimestamp: number): AccessToken {
       if (!token || token.trim() === '') {
         throw new Error('アクセストークンは空にできません');
       }
