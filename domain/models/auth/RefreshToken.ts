@@ -5,18 +5,18 @@ export class RefreshToken {
       this.token = token;
     }
   
-    public static create(token: string): RefreshToken {
+    static create(token: string): RefreshToken {
       if (!token || token.trim() === '') {
         throw new Error('リフレッシュトークンは空にできません');
       }
       return new RefreshToken(token);
     }
   
-    public getToken(): string {
+    getToken(): string {
       return this.token;
     }
   
-    public equals(other: RefreshToken): boolean {
+    equals(other: RefreshToken): boolean {
       return this.token === other.token;
     }
 }
