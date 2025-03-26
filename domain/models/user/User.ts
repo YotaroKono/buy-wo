@@ -8,21 +8,40 @@ export class User {
     private readonly _userId: UserId,
     private accessToken: AccessToken,
     private refreshToken?: RefreshToken,
-    private supabaseToken?: SupabaseToken
+    private supabaseToken?: SupabaseToken,
+    private _name?: string,
+    private _picture_url?: string,
+    private _email?: string
 ) {}
 
     static create(
         userId: UserId,
         accessToken: AccessToken,
         refreshToken?: RefreshToken,
-        supabaseToken?: SupabaseToken
+        supabaseToken?: SupabaseToken,
+        name?: string,
+        picture_url?: string,
+        email?: string
     ): User {
-        return new User(userId, accessToken, refreshToken, supabaseToken);
+        return new User(userId, accessToken, refreshToken, supabaseToken, name, picture_url, email);
     }
 
     get userId(): UserId {
         return this._userId;
     }
+
+    get email(): string {
+        return this._email!;
+    }
+
+    get name(): string | undefined {
+        return this._name;
+    }
+
+    get picture_url(): string | undefined {
+        return this._picture_url;
+    }
+
 
     getAccessToken(): AccessToken {
         return this.accessToken;

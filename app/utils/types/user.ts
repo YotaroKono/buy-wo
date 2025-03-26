@@ -5,4 +5,6 @@ export type User = {
 	expiresAt: number;
 	supabaseToken?: string;
 	userId: string;
+	name?: string;
+	picture_url?: string;
   }
