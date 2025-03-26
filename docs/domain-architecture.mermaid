@@ -1,0 +1,85 @@
+classDiagram
+    class TokenService {
+        -jwtSecret: string
+        -auth0Domain: string
+        +generateSupabaseToken(userId: UserId): SupabaseToken
+        +refreshAccessToken(refreshToken: RefreshToken): Promise~AccessToken~
+    }
+    
+    class AuthService {
+        -tokenService: TokenService
+        +getUserFromRequest(request: Request): Promise~User~
+        +ensureValidAccessToken(request: Request): Promise~string~
+        -userToSessionData(user: User): Record~string, any~
+    }
+    
+    class UserService {
+        -tokenService: TokenService
+        +createFromAuth0Profile(profileData): Promise~User~
+        -ensureUserInSupabase(user, userData): Promise~void~
+    }
+    
+    class User {
+        -_userId: UserId
+        -accessToken: AccessToken
+        -refreshToken: RefreshToken
+        -supabaseToken: SupabaseToken
+        +create(userId, accessToken, refreshToken?, supabaseToken?): User
+        +getAccessToken(): AccessToken
+        +getRefreshToken(): RefreshToken
+        +getSupabaseToken(): SupabaseToken
+        +withUpdatedAccessToken(newAccessToken): User
+        +withUpdatedRefreshToken(newRefreshToken): User
+        +withUpdatedSupabaseToken(newSupabaseToken): User
+    }
+    
+    class AccessToken {
+        -token: string
+        -expiresAt: Date
+        +static create(token, expiresInSeconds): AccessToken
+        +static restore(token, expiresAtTimestamp): AccessToken
+        +getToken(): string
+        +getExpiresAt(): Date
+        +isExpired(): boolean
+    }
+    
+    class RefreshToken {
+        -token: string
+        +static create(token): RefreshToken
+        +getToken(): string
+    }
+    
+    class SupabaseToken {
+        -token: string
+        -expiresAt: Date
+        +static create(token, expiresInSeconds): SupabaseToken
+        +static restore(token, expiresAtTimestamp): SupabaseToken
+        +getToken(): string
+        +getExpiresAt(): Date
+        +isExpired(): boolean
+    }
+    
+    class UserId {
+        -value: string
+        +static create(value): UserId
+        +getValue(): string
+    }
+    
+    %% サービス間の依存関係
+    AuthService --> TokenService: 依存
+    UserService --> TokenService: 依存
+    
+    %% サービスとエンティティ・値オブジェクトの関係
+    TokenService ..> SupabaseToken: 生成
+    TokenService ..> AccessToken: 生成
+    TokenService ..> UserId: 利用
+    TokenService ..> RefreshToken: 利用
+    
+    AuthService ..> User: 利用・生成
+    UserService ..> User: 生成
+    
+    %% エンティティと値オブジェクトの関係
+    User *-- UserId: 含む
+    User *-- AccessToken: 含む
+    User *-- RefreshToken: 含む（任意）
+    User *-- SupabaseToken: 含む（任意）
