@@ -83,8 +83,8 @@ export class AuthService {
     return accessToken.getToken();
   }
 
-  private userToSessionData(user: User): Record<string, any> {
-    const sessionData: Record<string, any> = {
+  private userToSessionData(user: User): SessionData {
+    const sessionData: SessionData = {
       userId: user.userId.getValue(),
       accessToken: user.getAccessToken().getToken(),
       expiresAt: user.getAccessToken().getExpiresAt().getTime(),
@@ -102,4 +102,14 @@ export class AuthService {
 
     return sessionData;
   }
+}
+
+// TODO: 別ファイルに移動する
+interface SessionData {
+  userId: string;
+  accessToken: string;
+  expiresAt: number;
+  refreshToken?: string;
+  supabaseToken?: string;
+  supabaseTokenExpiresAt?: number;
 }
