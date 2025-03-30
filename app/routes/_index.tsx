@@ -31,20 +31,25 @@ export default function Index() {
 	return (
 		<div>
 			<h1>初期ページ</h1>
-			{showLoginFailedDialog && (
-        <div className="flex justify-center">
-		    <div className="card w-96 bg-base-100 card-md shadow-sm">
-			<div className="card-body">
-				<h2 className="card-title justify-center">ログイン失敗</h2>
-				<p>ログインに失敗しました。しばらくしてから、もう一度お試しください。</p>
-				<div className="justify-end card-actions">
-				<button onClick={closeDialog} className="btn btn-primary">閉じる</button>
-				</div>
-			</div>
-			</div>
-        </div>
-		
-      )}
+					{showLoginFailedDialog && (
+				<>
+					<div 
+						className="fixed inset-0 bg-black bg-opacity-50 z-40"
+						onClick={closeDialog}
+					></div>
+					<div className="fixed inset-0 flex items-center justify-center z-50">
+						<div className="card w-96 bg-base-100 card-md shadow-xl">
+							<div className="card-body">
+								<h2 className="card-title justify-center">ログイン失敗</h2>
+								<p>ログインに失敗しました。しばらくしてから、もう一度お試しください。</p>
+								<div className="justify-end card-actions">
+									<button onClick={closeDialog} className="btn btn-primary">閉じる</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</>
+			)}
 		</div>
 	);
 }
