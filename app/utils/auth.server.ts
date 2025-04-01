@@ -155,7 +155,6 @@ async function refreshAccessToken(refreshToken: string): Promise<{
 export async function getValidAccessToken(request: Request): Promise<string> {
   const session = await getSession(request.headers.get("Cookie"));
   const user = session.get("user") as User;
-  console.log("@@@@@@@@@@@@@@@@@@@@@@@", user);
 
   if (!user) {
     throw redirect("/login");
