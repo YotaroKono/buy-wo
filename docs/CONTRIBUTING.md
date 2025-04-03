@@ -7,7 +7,7 @@
 - **フロントエンド/バックエンド**: [Remix](https://remix.run/)
 - **データベース**: [Supabase](https://supabase.io/)
 - **認証**: [Auth0](https://auth0.com/)
-- **スタイリング**: TailwindCSS
+- **スタイリング**: TailwindCSS DaisyUI
 
 ## ディレクトリ構成と設計思想
 

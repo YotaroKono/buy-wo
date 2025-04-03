@@ -80,117 +80,150 @@
 
 #### 1. `users` テーブル
 ```
-- id (PK): UUID
-- username: VARCHAR(50)
-- email: VARCHAR(100)
-- password_hash: VARCHAR(255)
-- created_at: TIMESTAMP
-- updated_at: TIMESTAMP
+- id (PK): UUID NOT NULL
+- auth_id: VARCHAR(50) NOT NULL UNIQUE  // Supabaseの認証ユーザーID
+- name: VARCHAR(100) NOT NULL
+- email: VARCHAR(100) NOT NULL UNIQUE
+- picture_url: VARCHAR(255) NULL
+- created_at: TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+- updated_at: TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 ```
 
 #### 2. `wish_items` テーブル
 ```
 - id (PK): UUID
-- user_id (FK): UUID (references users.id)
-- name: VARCHAR(100)
-- description: TEXT
-- product_url: VARCHAR(255)
-- image_url: VARCHAR(255)
-- price: DECIMAL(10,2)
-- currency: VARCHAR(3)
-- priority: ENUM('必須', '高', '中', '低')
-- status: ENUM('未購入', '購入済み', 'キャンセル')
-- purchase_date: DATE
-- purchase_price: DECIMAL(10,2)
-- purchase_location: VARCHAR(100)
-- created_at: TIMESTAMP
-- updated_at: TIMESTAMP
+- user_id: UUID (FK → users.id) NOT NULL
+- name: VARCHAR(100) NOT NULL
+- description: TEXT NULL
+- product_url: VARCHAR(255) NULL
+- image_url: VARCHAR(255) NULL
+- price: DECIMAL(10,2) NULL
+- currency: VARCHAR(3) NULL DEFAULT 'JPY'
+- priority: ENUM('必須', '高', '中', '低') NOT NULL DEFAULT '中'
+- status: ENUM('未購入', '購入済み', 'キャンセル') NOT NULL DEFAULT '未購入'
+- purchase_date: DATE NULL
+- purchase_price: DECIMAL(10,2) NULL
+- purchase_location: VARCHAR(100) NULL
+- created_at: TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+- updated_at: TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 ```
 
 #### 3. `priority_history` テーブル
 ```
-- id (PK): UUID
-- wish_item_id (FK): UUID (references wish_items.id)
-- old_priority: ENUM('必須', '高', '中', '低')
-- new_priority: ENUM('必須', '高', '中', '低')
-- changed_at: TIMESTAMP
+- id (PK): UUID NOT NULL
+- wish_item_id: UUID NOT NULL (FK → wish_items.id)
+- old_priority: ENUM('必須', '高', '中', '低') NOT NULL
+- new_priority: ENUM('必須', '高', '中', '低') NOT NULL
+- changed_at: TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 ```
 
-## API設計
+# API設計（Remix + Supabase）
 
-### 認証関連
+## 認証関連
 
-Auth0による認証認可
+Supabaseの認証機能を使用
 
-### 買いたいものリスト関連
+## コア機能（MVP）のAPI
 
-#### 1. アイテム追加
-- **エンドポイント**: `POST /api/wish-items`
-- **認証**: 必要
-- **ボディ**: `{ name, description?, product_url?, image_url?, price?, currency?, priority }`
-- **レスポンス**: `{ id, name, ... (他のアイテム情報) }`
+### 1. アイテム追加 【コア機能】
+- **API関数**: `createWishItem`
+- **入力**: `{ name, description?, product_url?, image_url?, price?, currency?, priority }`
+- **出力**: 作成されたアイテムオブジェクト
+- **実装場所**: `/app/models/wish-item.server.ts`
+- **呼び出し元**: `/app/routes/items/new.tsx` など
 
-#### 2. アイテム一覧取得
-- **エンドポイント**: `GET /api/wish-items`
-- **認証**: 必要
-- **クエリパラメータ**: `status?, priority?, sort_by?, sort_order?`
-- **レスポンス**: `{ items: [{ id, name, ... }, ...], total_count }`
+### 2. アイテム一覧取得 【コア機能】
+- **API関数**: `getWishItems`
+- **入力**: `{ userId, status?, priority?, sort_by?, sort_order? }`
+- **出力**: アイテムオブジェクトの配列
+- **実装場所**: `/app/models/wish-item.server.ts`
+- **呼び出し元**: `/app/routes/items/index.tsx` など
 
-#### 3. アイテム詳細取得
-- **エンドポイント**: `GET /api/wish-items/:id`
-- **認証**: 必要
-- **レスポンス**: `{ id, name, ... (他のアイテム詳細情報) }`
+### 3. アイテム詳細取得 【コア機能】
+- **API関数**: `getWishItem`
+- **入力**: `{ itemId, userId }`
+- **出力**: アイテムオブジェクト
+- **実装場所**: `/app/models/wish-item.server.ts`
+- **呼び出し元**: `/app/routes/items/$itemId.tsx` など
 
-#### 4. アイテム更新
-- **エンドポイント**: `PUT /api/wish-items/:id`
-- **認証**: 必要
-- **ボディ**: アイテム情報の各フィールド (変更したいものだけ)
-- **レスポンス**: 更新されたアイテム情報
+### 4. アイテム更新 【コア機能】
+- **API関数**: `updateWishItem`
+- **入力**: `{ itemId, userId, ...更新フィールド }`
+- **出力**: 更新されたアイテムオブジェクト
+- **実装場所**: `/app/models/wish-item.server.ts`
+- **呼び出し元**: `/app/routes/items/$itemId/edit.tsx` など
 
-#### 5. アイテム削除
-- **エンドポイント**: `DELETE /api/wish-items/:id`
-- **認証**: 必要
-- **レスポンス**: `{ success: true }`
+### 5. アイテム削除 【コア機能】
+- **API関数**: `deleteWishItem`
+- **入力**: `{ itemId, userId }`
+- **出力**: 削除結果
+- **実装場所**: `/app/models/wish-item.server.ts`
+- **呼び出し元**: `/app/routes/items/$itemId/delete.tsx` など
 
-#### 6. 優先度更新
-- **エンドポイント**: `PATCH /api/wish-items/:id/priority`
-- **認証**: 必要
-- **ボディ**: `{ priority: '必須'|'高'|'中'|'低' }`
-- **レスポンス**: 更新されたアイテム情報
+### 6. 優先度更新 【コア機能】
+- **API関数**: `updateItemPriority`
+- **入力**: `{ itemId, userId, priority, updateHistory = true }`
+- **出力**: 更新されたアイテムオブジェクト
+- **実装場所**: `/app/models/wish-item.server.ts`
+- **呼び出し元**: `/app/routes/items/$itemId/priority.tsx` など
+- **注**: 履歴も記録するため、トランザクション処理を含む
 
-#### 7. 購入完了マーク
-- **エンドポイント**: `PATCH /api/wish-items/:id/status`
-- **認証**: 必要
-- **ボディ**: `{ status: '購入済み'|'キャンセル', purchase_date?, purchase_price?, purchase_location? }`
-- **レスポンス**: 更新されたアイテム情報
+### 7. 購入完了マーク 【コア機能】
+- **API関数**: `markItemStatus`
+- **入力**: `{ itemId, userId, status, purchase_date?, purchase_price?, purchase_location? }`
+- **出力**: 更新されたアイテムオブジェクト
+- **実装場所**: `/app/models/wish-item.server.ts`
+- **呼び出し元**: `/app/routes/items/$itemId/mark-purchased.tsx` など
 
-#### 8. URL情報取得 (URLからの商品情報自動取得)
-- **エンドポイント**: `POST /api/scrape-product-info`
-- **認証**: 必要
-- **ボディ**: `{ url }`
-- **レスポンス**: `{ name, description, price, image_url }`
+### 8. URL情報取得（商品情報自動取得）【コア機能】
+- **API関数**: `scrapeProductInfo`
+- **入力**: `{ url }`
+- **出力**: `{ name, description, price, image_url }`
+- **実装場所**: `/app/utils/scraper.server.ts`
+- **呼び出し元**: `/app/routes/api/scrape-product-info.tsx`
+- **注**: Remixのリソースルートとして実装
 
-#### 9. 画像アップロード
-- **エンドポイント**: `POST /api/uploads/images`
-- **認証**: 必要
-- **フォームデータ**: `image`ファイル
-- **レスポンス**: `{ image_url }`
+## 拡張機能のAPI（第2段階以降）
+
+### 9. カテゴリ管理
+- **API関数**: `createCategory`, `getCategories`, `updateCategory`, `deleteCategory`
+- **実装場所**: `/app/models/category.server.ts`
+
+### 10. アイテムへのメモ追加
+- **API関数**: `addItemNote`, `getItemNotes`, `updateItemNote`, `deleteItemNote`
+- **実装場所**: `/app/models/note.server.ts`
+
+### 11. 購入履歴統計
+- **API関数**: `getPurchaseStats`
+- **実装場所**: `/app/models/stats.server.ts`
+
+### 12. リスト共有
+- **API関数**: `createShareableLink`, `getSharedList`, `updateShareSettings`
+- **実装場所**: `/app/models/share.server.ts`
+
+### 13. 画像アップロード
+- **API関数**: `uploadImage`
+- **実装場所**: `/app/utils/storage.server.ts`
+- **呼び出し元**: `/app/routes/api/upload-image.tsx`
+- **注**: SupabaseのStorage機能を利用
 
 ## その他の技術仕様
 
 ### 認証方式
-- JWT (JSON Web Token)を使用したトークンベースの認証
+- Supabaseの認証機能を使用
+- セッションベースの認証（RemixのSessionStorage）
 
 ### 画像保存
-- クラウドストレージサービス（AWS S3など）を利用
+- Supabase Storageを利用
 
 ### URL情報取得
-- サーバーサイドスクレイピングまたはOGPメタタグ取得API
+- サーバーサイドスクレイピング（cheerio, puppeteerなど）
+- OGPメタタグの取得
 
 ### データバリデーション
-- 各APIエンドポイントでの入力値検証
-- 必須フィールドと任意フィールドの区別
+- Zodを使用したスキーマ検証
+- フォーム入力値の検証（Remix Form）
 
 ### エラーハンドリング
-- 統一されたエラーレスポンス形式
-- ログイン状態、アクセス権限のチェック
+- Remixのエラーバウンダリを活用
+- 一貫したエラーレスポンス形式の提供
