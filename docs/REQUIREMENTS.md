@@ -99,8 +99,8 @@
 - image_url: VARCHAR(255) NULL
 - price: DECIMAL(10,2) NULL
 - currency: VARCHAR(3) NULL DEFAULT 'JPY'
-- priority: ENUM('必須', '高', '中', '低') NOT NULL DEFAULT '中'
-- status: ENUM('未購入', '購入済み', 'キャンセル') NOT NULL DEFAULT '未購入'
+- priority: ENUM('high', 'middle', 'low') NOT NULL DEFAULT 'middle' //  未設定
+- status: ENUM('unpurchased', 'purchased') NOT NULL DEFAULT 'unpurchased'　//  未設定
 - purchase_date: DATE NULL
 - purchase_price: DECIMAL(10,2) NULL
 - purchase_location: VARCHAR(100) NULL
@@ -112,8 +112,8 @@
 ```
 - id (PK): UUID NOT NULL
 - wish_item_id: UUID NOT NULL (FK → wish_items.id)
-- old_priority: ENUM('必須', '高', '中', '低') NOT NULL
-- new_priority: ENUM('必須', '高', '中', '低') NOT NULL
+- old_priority: ENUM('high', 'middle', 'low') NOT NULL
+- new_priority: ENUM('high', 'middle', 'low') NOT NULL
 - changed_at: TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 ```
 
