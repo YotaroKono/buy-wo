@@ -1,9 +1,9 @@
 import { createCookieSessionStorage, redirect } from "@remix-run/node";
 import { Authenticator } from "remix-auth";
 import { Auth0Strategy } from "remix-auth-auth0";
-import type { User } from "./types/user";
+import type { User } from "../utils/types/user";
 import jwt from "jsonwebtoken";
-import { getSupabaseClient } from "./supabase.server";
+import { getSupabaseClient } from "../models/supabase.server";
 
 export const sessionStorage = createCookieSessionStorage({
   cookie: {
