@@ -1,7 +1,7 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { getValidAccessToken, requireUser } from "~/models/auth.server";
-import { getWishItems } from "~/models/wishItem.server";
+import { getWishItems, WishItem } from "~/models/wishItem.server";
 
 // ローダーの返り値の型を定義
 type LoaderData = 
@@ -18,7 +18,6 @@ export const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderDat
   } 
   catch (error) {
     console.error(error);
-    // エラーの場合も同じ構造のオブジェクトを返す
     return { success: false, error: "Failed to fetch wish items" };
   }
 };
