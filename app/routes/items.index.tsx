@@ -11,9 +11,6 @@ type LoaderData =
 export const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
   try {
     const user = await requireUser(request);
-    console.log("========================================");
-    console.log("WishItemsIndex user:", user);
-    console.log("WishItemsIndex userId:", user.userId);
     const supabaseToken = createSupabaseToken(user.userId);
     const wishItems = await getWishItems(user.userId, supabaseToken);
     
@@ -27,8 +24,6 @@ export const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderDat
 
 export default function WishItemsIndex() {
   const data = useLoaderData<typeof loader>();
-  console.log("========================================");
-  console.log("WishItemsIndex data:", data);
 
   // データの状態に基づいて表示を切り替え
   if (!data.success) {
