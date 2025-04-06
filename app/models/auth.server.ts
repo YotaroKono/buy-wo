@@ -18,7 +18,7 @@ export const sessionStorage = createCookieSessionStorage({
 
 export const { getSession, commitSession, destroySession } = sessionStorage;
 
-function createSupabaseToken(userId: string): string {
+export function createSupabaseToken(userId: string): string {
   const payload = {
     userId,
     exp: Math.floor(Date.now() / 1000) + 60 * 60, // 1時間の有効期限

@@ -1,6 +1,6 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { getValidAccessToken, requireUser } from "~/models/auth.server";
+import { requireUser, createSupabaseToken } from "~/models/auth.server";
 import { getWishItems, WishItem } from "~/models/wishItem.server";
 
 // ローダーの返り値の型を定義
@@ -11,7 +11,10 @@ type LoaderData =
 export const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
   try {
     const user = await requireUser(request);
-    const supabaseToken = await getValidAccessToken(request);
+    console.log("========================================");
+    console.log("WishItemsIndex user:", user);
+    console.log("WishItemsIndex userId:", user.userId);
+    const supabaseToken = createSupabaseToken(user.userId);
     const wishItems = await getWishItems(user.userId, supabaseToken);
     
     return { success: true, wishItems };
@@ -24,6 +27,8 @@ export const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderDat
 
 export default function WishItemsIndex() {
   const data = useLoaderData<typeof loader>();
+  console.log("========================================");
+  console.log("WishItemsIndex data:", data);
 
   // データの状態に基づいて表示を切り替え
   if (!data.success) {

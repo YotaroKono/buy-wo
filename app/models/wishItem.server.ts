@@ -19,6 +19,7 @@ export interface WishItem {
   updated_at: string;
 }
 
+// TODO: supabase のRLSを適切に設定する
 export async function getWishItems(
   userId: string,
   supabaseToken: string,
@@ -33,7 +34,7 @@ export async function getWishItems(
   }
 
   let query = supabase
-    .from("wish_items")
+    .from("wish_item")
     .select("*")
     .eq("user_id", userId);
 
