@@ -96,7 +96,7 @@
 - name: VARCHAR(100) NOT NULL
 - description: TEXT NULL
 - product_url: VARCHAR(255) NULL
-- image_url: VARCHAR(255) NULL
+- image_path VARCHAR(255) NULL,
 - price: DECIMAL(10,2) NULL
 - currency: VARCHAR(3) NULL DEFAULT 'JPY'
 - priority: ENUM('high', 'middle', 'low') NOT NULL DEFAULT 'middle' //  未設定
@@ -127,7 +127,7 @@ Supabaseの認証機能を使用
 
 ### 1. アイテム追加 【コア機能】
 - **API関数**: `createWishItem`
-- **入力**: `{ name, description?, product_url?, image_url?, price?, currency?, priority }`
+- **入力**: `{ name, description?, product_url?, image_path?, price?, currency?, priority }`
 - **出力**: 作成されたアイテムオブジェクト
 - **実装場所**: `/app/models/wish-item.server.ts`
 - **呼び出し元**: `/app/routes/items/new.tsx` など
@@ -178,7 +178,7 @@ Supabaseの認証機能を使用
 ### 8. URL情報取得（商品情報自動取得）【コア機能】
 - **API関数**: `scrapeProductInfo`
 - **入力**: `{ url }`
-- **出力**: `{ name, description, price, image_url }`
+- **出力**: `{ name, description, price, image_path }`
 - **実装場所**: `/app/utils/scraper.server.ts`
 - **呼び出し元**: `/app/routes/api/scrape-product-info.tsx`
 - **注**: Remixのリソースルートとして実装
