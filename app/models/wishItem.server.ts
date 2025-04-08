@@ -1,5 +1,4 @@
 import { getSupabaseClient } from "./supabase.server";
-import type { User } from "./auth.server";
 
 export interface WishItem {
   id: string;
@@ -7,7 +6,7 @@ export interface WishItem {
   name: string;
   description: string | null;
   product_url: string | null;
-  image_url: string | null;
+  image_path: string | null;
   price: number | null;
   currency: string | null;
   priority: "high" | "middle" | "low";
@@ -19,7 +18,6 @@ export interface WishItem {
   updated_at: string;
 }
 
-// TODO: supabase のRLSを適切に設定する
 export async function getWishItems(
   userId: string,
   supabaseToken: string,
