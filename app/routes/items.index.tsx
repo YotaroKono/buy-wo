@@ -1,5 +1,6 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link, useNavigate } from "@remix-run/react";
+import WishItemList from "~/components/feature/wishItem/wishItemList";
 import { requireUser, createSupabaseToken } from "~/models/auth.server";
 import { getWishItems, WishItem } from "~/models/wishItem.server";
 
@@ -94,84 +95,7 @@ export default function WishItemsIndex() {
   // 成功時の表示
   return (
     <div className="container mx-auto py-8 px-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">買いたいものリスト</h1>
-        <Link to="/items/new" className="btn btn-primary">
-          新しいアイテムを追加
-        </Link>
-      </div>
-      
-      {data.wishItems.length === 0 ? (
-        <div className="text-center py-10 bg-base-100 rounded-lg shadow-sm">
-          <p className="text-gray-500 mb-4">登録されているアイテムがありません</p>
-          <Link to="/items/new" className="btn btn-primary">
-            最初のアイテムを追加する
-          </Link>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {data.wishItems.map((item) => (
-            <div key={item.id} className="card bg-base-100 shadow-sm">
-              <figure className="h-48 bg-gray-100 py-2">
-                {item.image_path ? (
-                  <img
-                    src={item.image_path}
-                    alt={item.name || '商品画像'}
-                    className="object-contain h-full w-full"
-                  />
-                ) : (
-                  <div className="flex items-center justify-center h-full w-full text-gray-400">
-                    <span>画像なし</span>
-                  </div>
-                )}
-              </figure>
-              
-              <div className="card-body">
-                <div className="flex justify-between items-start">
-                  <h2 className="card-title text-lg">{item.name}</h2>
-                  <span className={`badge ${getPriorityClass(item.priority || 'middle')}`}>
-                    {item.priority === 'high' ? '高' : item.priority === 'middle' ? '中' : '低'}
-                  </span>
-                </div>
-                
-                {item.price && (
-                  <p className="font-semibold text-lg">{formatPrice(item.price, item.currency)}</p>
-                )}
-                
-                {item.description && (
-                  <p className="text-sm text-gray-600 line-clamp-2">{item.description}</p>
-                )}
-                
-                {item.product_url && (
-                  <a 
-                    href={item.product_url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-xs text-blue-500 hover:underline truncate block mt-1"
-                  >
-                    {item.product_url}
-                  </a>
-                )}
-                
-                <div className="card-actions justify-end mt-4">
-                  <Link 
-                    to={`/items/${item.id}`} 
-                    className="btn btn-sm btn-outline"
-                  >
-                    詳細
-                  </Link>
-                  <Link 
-                    to={`/items/${item.id}/mark-purchased`} 
-                    className="btn btn-sm btn-primary"
-                  >
-                    購入済み
-                  </Link>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      <WishItemList wishItems={data.wishItems} />
     </div>
-  );
+  );;
 }
