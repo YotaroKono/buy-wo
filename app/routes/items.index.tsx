@@ -1,5 +1,5 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
+import { useLoaderData, Link, useNavigate } from "@remix-run/react";
 import { requireUser, createSupabaseToken } from "~/models/auth.server";
 import { getWishItems, WishItem } from "~/models/wishItem.server";
 
@@ -22,6 +22,7 @@ export const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderDat
 
 export default function WishItemsIndex() {
   const data = useLoaderData<typeof loader>();
+  const navigate = useNavigate();
 
   // 優先度に応じた色クラスを返す関数
   const getPriorityClass = (priority: string) => {
@@ -72,13 +73,21 @@ export default function WishItemsIndex() {
   // データの状態に基づいて表示を切り替え
   if (!data.success) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 bg-base-200 rounded-lg shadow-sm">
-        <h1 className="text-2xl font-bold text-error mb-4">エラーが発生しました</h1>
-        <p className="text-gray-600 mb-6">{data.error}</p>
-        <Link to="/" className="btn btn-primary">
-          ホームに戻る
-        </Link>
-      </div>
+      <>
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-40"onClick={() => navigate('/')}>
+        </div>
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="card w-96 bg-base-100 card-md shadow-xl">
+            <div className="card-body">
+              <h2 className="card-title justify-center">エラーが発生しました</h2>
+              <p>{data.error}</p>
+              <div className="justify-end card-actions">
+                <Link to="/" className="btn btn-primary">ホームに戻る</Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
     );
   }
 
