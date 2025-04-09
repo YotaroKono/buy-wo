@@ -1,0 +1,202 @@
+import { Form, useActionData, useNavigation, useNavigate } from "@remix-run/react";
+import { createWishItem } from "~/models/wishItem.server";
+import { requireUser, createSupabaseToken } from "~/models/auth.server";
+
+export const action = async ({ request }: { request: Request }) => {
+  const formData = await request.formData();
+  const name = formData.get("name") as string | null;
+  const description = formData.get("description") as string | null;
+  const product_url = formData.get("product_url") as string | null;
+  const image_path = formData.get("image_path") as string | null;
+  const price = formData.get("price") as string | null;
+  const currency = formData.get("currency") as string | null;
+  const priority = formData.get("priority") as "high" | "middle" | "low" | null;
+
+  if (!name || !priority) {
+    return {
+      success: false,
+      error: "Name and priority are required",
+    };
+  }
+
+  try {
+    const user = await requireUser(request);
+    const supabaseToken = createSupabaseToken(user.userId);
+
+    await createWishItem(user.userId, supabaseToken, {
+      name,
+      description,
+      product_url,
+      image_path,
+      price: price ? parseFloat(price) : null,
+      currency,
+      priority,
+      status: "unpurchased",
+      purchase_date: null,
+      purchase_price: null,
+      purchase_location: null,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error(error);
+    return { success: false, error: "Failed to create wish item" };
+  }
+};
+
+export default function NewItem() {
+  const actionData = useActionData<{ success?: boolean; error?: string }>();
+  const transition = useNavigation();
+
+  const isSubmitting = transition.state === "submitting";
+
+  return (
+    <div className="container mx-auto py-8 px-4">
+      <h1 className="text-2xl font-bold mb-4">新しいアイテムを追加</h1>
+
+      {actionData?.error && (
+        <div className="alert alert-error shadow-lg mb-4">
+          <div>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="stroke-current flex-shrink-0 h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M10 14l2-2m0 0l2-2m-2 2l-2 2m2-2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <span>{actionData.error}</span>
+          </div>
+        </div>
+      )}
+
+      {actionData?.success && (
+        <div className="alert alert-success shadow-lg mb-4">
+          <div>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="stroke-current flex-shrink-0 h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+            <span>アイテムが正常に追加されました！</span>
+          </div>
+        </div>
+      )}
+
+      <Form method="post" className="space-y-4">
+        <div>
+          <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+            商品名
+          </label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            required
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+            説明
+          </label>
+          <textarea
+            id="description"
+            name="description"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="product_url" className="block text-sm font-medium text-gray-700">
+            商品URL
+          </label>
+          <input
+            type="url"
+            id="product_url"
+            name="product_url"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="image_path" className="block text-sm font-medium text-gray-700">
+            画像URL
+          </label>
+          <input
+            type="url"
+            id="image_path"
+            name="image_path"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="price" className="block text-sm font-medium text-gray-700">
+            価格
+          </label>
+          <input
+            type="number"
+            id="price"
+            name="price"
+            step="0.01"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="currency" className="block text-sm font-medium text-gray-700">
+            通貨
+          </label>
+          <input
+            type="text"
+            id="currency"
+            name="currency"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="priority" className="block text-sm font-medium text-gray-700">
+            優先度
+          </label>
+          <select
+            id="priority"
+            name="priority"
+            required
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          >
+            <option value="" disabled>
+              選択してください
+            </option>
+            <option value="high">高</option>
+            <option value="middle">中</option>
+            <option value="low">低</option>
+          </select>
+        </div>
+
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="btn btn-primary"
+        >
+          {isSubmitting ? "追加中..." : "追加"}
+        </button>
+      </Form>
+    </div>
+  );
+}
