@@ -57,3 +57,34 @@ export async function getWishItems(
 
   return data as WishItem[];
 }
+
+export async function createWishItem(
+  userId: string,
+  supabaseToken: string,
+  wishItem: Omit<WishItem, "id" | "user_id" | "created_at" | "updated_at">
+): Promise<WishItem> {
+  const supabase = getSupabaseClient(supabaseToken);
+  if (!supabase) {
+    throw new Error("Supabase clientの生成に失敗しました");
+  }
+
+  const { data, error } = await supabase
+    .from("wish_item")
+    .insert({
+      ...wishItem,
+      user_id: userId,
+    })
+    .select("*")
+    .single();
+
+  if (error) {
+    console.error("Error creating wish item:", error);
+    throw new Error("Wish itemの作成に失敗しました");
+  }
+
+  if (!data) {
+    throw new Error("Wish itemの作成に失敗しました");
+  }
+
+  return data as WishItem;
+}
