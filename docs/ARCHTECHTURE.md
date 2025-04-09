@@ -162,4 +162,3 @@ export default function WishItemList({ items }: WishItemListProps) {
 - 新機能を追加する際は、まずmodelsにビジネスロジックを実装し、次にroutesで呼び出し、最後にUIを実装する
 - サーバーサイドでのみ実行される処理は必ず`.server.ts`サフィックスを付けたファイルに配置する
 - コンポーネントは純粋なUIに集中し、データアクセスロジックを含めない
-- テスト作成時は各層を独立してテスト可能な構造を維持する

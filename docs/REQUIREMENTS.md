@@ -216,7 +216,7 @@ Supabaseの認証機能を使用
 ### 画像保存
 - Supabase Storageを利用
 
-### URL情報取得
+### URL情報取得(MVPでは実装しない)
 - サーバーサイドスクレイピング（cheerio, puppeteerなど）
 - OGPメタタグの取得
 
