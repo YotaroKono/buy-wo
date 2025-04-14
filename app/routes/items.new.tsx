@@ -1,4 +1,4 @@
-import { Form, useActionData, useNavigation, useNavigate } from "@remix-run/react";
+import { Form, useActionData, useNavigation } from "@remix-run/react";
 import { createWishItem } from "~/models/wishItem.server";
 import { requireUser, createSupabaseToken } from "~/models/auth.server";
 
@@ -12,10 +12,17 @@ export const action = async ({ request }: { request: Request }) => {
   const currency = formData.get("currency") as string | null;
   const priority = formData.get("priority") as "high" | "middle" | "low" | null;
 
-  if (!name || !priority) {
+  if (!name || !priority || !currency) {
     return {
       success: false,
-      error: "Name and priority are required",
+      error: "商品名、優先度、通貨は必須です",
+    };
+  }
+
+  if (currency !== 'JPY' && currency !== 'USD') {
+    return {
+      success: false,
+      error: "通貨は JPY または USD を指定してください。",
     };
   }
 
@@ -29,7 +36,7 @@ export const action = async ({ request }: { request: Request }) => {
       product_url,
       image_path,
       price: price ? parseFloat(price) : null,
-      currency,
+      currency: currency as 'JPY' | 'USD',
       priority,
       status: "unpurchased",
       purchase_date: null,
@@ -40,7 +47,7 @@ export const action = async ({ request }: { request: Request }) => {
     return { success: true };
   } catch (error) {
     console.error(error);
-    return { success: false, error: "Failed to create wish item" };
+    return { success: false, error: "アイテムの作成に失敗しました" };
   }
 };
 
@@ -162,12 +169,16 @@ export default function NewItem() {
           <label htmlFor="currency" className="block text-sm font-medium text-gray-700">
             通貨
           </label>
-          <input
-            type="text"
+          <select
             id="currency"
             name="currency"
+            required
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-          />
+          >
+            <option value="" disabled>選択してください</option>
+            <option value="JPY">JPY</option>
+            <option value="USD">USD</option>
+          </select>
         </div>
 
         <div>
@@ -180,9 +191,7 @@ export default function NewItem() {
             required
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           >
-            <option value="" disabled>
-              選択してください
-            </option>
+            <option value="" disabled>選択してください</option>
             <option value="high">高</option>
             <option value="middle">中</option>
             <option value="low">低</option>

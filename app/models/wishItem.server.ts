@@ -8,7 +8,7 @@ export interface WishItem {
   product_url: string | null;
   image_path: string | null;
   price: number | null;
-  currency: string | null;
+  currency: 'JPY' | 'USD';
   priority: "high" | "middle" | "low";
   status: "unpurchased" | "purchased";
   purchase_date: string | null;
@@ -21,10 +21,10 @@ export interface WishItem {
 // Helper function to format price based on currency
 export function formatPrice(price: number | null, currency: string | null | undefined = 'JPY'): string {
   if (!price) return '';
-  
+
   // Use default currency if null or undefined
   const currencyCode = currency || 'JPY';
-  
+
   // Currency formatting options by currency code
   const formatOptions: Record<string, { locale: string, options: Intl.NumberFormatOptions }> = {
     'JPY': {
@@ -32,45 +32,53 @@ export function formatPrice(price: number | null, currency: string | null | unde
       options: {
         style: 'currency',
         currency: 'JPY',
-        currencyDisplay: 'symbol'
-      }
+        currencyDisplay: 'symbol',
+      },
     },
     'USD': {
       locale: 'en-US',
       options: {
         style: 'currency',
         currency: 'USD',
-        currencyDisplay: 'symbol'
-      }
-    }
+        currencyDisplay: 'symbol',
+      },
+    },
   };
-  
+
   // Use configured format or fallback to default
   const format = formatOptions[currencyCode] || {
     locale: 'ja-JP',
-    options: { style: 'currency', currency: currencyCode }
+    options: { style: 'currency', currency: currencyCode },
   };
-  
+
   return new Intl.NumberFormat(format.locale, format.options).format(price);
 }
 
 // Get priority display class for UI
 export function getPriorityClass(priority: string | null): string {
   switch (priority) {
-    case 'high': return 'badge-error';
-    case 'middle': return 'badge-warning';
-    case 'low': return 'badge-info';
-    default: return 'badge-ghost';
+    case 'high':
+      return 'badge-error';
+    case 'middle':
+      return 'badge-warning';
+    case 'low':
+      return 'badge-info';
+    default:
+      return 'badge-ghost';
   }
 }
 
 // Get priority display text in Japanese
 export function getPriorityLabel(priority: string | null): string {
   switch (priority) {
-    case 'high': return '高';
-    case 'middle': return '中';
-    case 'low': return '低';
-    default: return '未設定';
+    case 'high':
+      return '高';
+    case 'middle':
+      return '中';
+    case 'low':
+      return '低';
+    default:
+      return '未設定';
   }
 }
 
