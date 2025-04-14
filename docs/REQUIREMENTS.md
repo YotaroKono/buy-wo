@@ -89,7 +89,7 @@
 - updated_at: TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 ```
 
-#### 2. `wish_items` テーブル
+#### 2. `wish_item` テーブル
 ```
 - id (PK): UUID
 - user_id: UUID (FK → users.id) NOT NULL
@@ -97,8 +97,8 @@
 - description: TEXT NULL
 - product_url: VARCHAR(255) NULL
 - image_path VARCHAR(255) NULL,
-- price: DECIMAL(10,2) NULL
-- currency: VARCHAR(3) NULL DEFAULT 'JPY'
+- price: DECIMAL(10,2) NULL 
+- currency: ENUM('JPY', 'USD') NOT NULL DEFAULT 'JPY'
 - priority: ENUM('high', 'middle', 'low') NOT NULL DEFAULT 'middle' //  未設定
 - status: ENUM('unpurchased', 'purchased') NOT NULL DEFAULT 'unpurchased'　//  未設定
 - purchase_date: DATE NULL
