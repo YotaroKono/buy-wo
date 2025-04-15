@@ -8,6 +8,7 @@ export const meta: MetaFunction = () => {
 	return [{ title: "buy-wo" }];
 };
 
+// TODO: 無限にリダイレクトが起きているので修正する
 export const loader = async ({ request }: LoaderFunctionArgs) => {
 	const user = await requireUser(request);
 	if (user) {
