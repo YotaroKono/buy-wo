@@ -1,12 +1,20 @@
-import type { ActionFunctionArgs, MetaFunction } from "@remix-run/node";
-import { useSearchParams } from "@remix-run/react";
+import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
+import { redirect, useSearchParams } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import Modal from "~/components/ErrorModal";
-import { authenticator } from "~/models/auth.server"; // Assuming Modal is in this path
+import { authenticator, requireUser } from "~/models/auth.server";
 
 export const meta: MetaFunction = () => {
-	return [{ title: "New Remix App" }, { name: "description", content: "Welcome to Remix!" }];
+	return [{ title: "buy-wo" }];
 };
+
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+	const user = await requireUser(request);
+	if (user) {
+		return null;
+	}
+	redirect("/dashboard");
+}
 
 export const action = ({ request }: ActionFunctionArgs) => {
 	console.log("request", request);
