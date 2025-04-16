@@ -36,7 +36,6 @@
 
 ```bash
 git clone [repository-url]
-cd shopping-wishlist-app
 ```
 
 2. 環境変数の設定:
@@ -45,7 +44,7 @@ cd shopping-wishlist-app
 
 3. Dockerコンテナの起動:
 ```
-bashdocker-compose up
+docker-compose up
 ```
 これで `http://localhost:5173` でアプリケーションにアクセスできます。
 
