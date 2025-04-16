@@ -1,40 +1,82 @@
-# Welcome to Remix!
+# buy-wo
 
-- 📖 [Remix docs](https://remix.run/docs)
+## 👀 プロジェクト概要
 
-## Development
+このアプリケーションは、ユーザーが買いたいものをリスト化し、優先度設定や購入履歴の管理などを通じて、より計画的で満足度の高い買い物体験を実現することを目的としています。
 
-Run the dev server:
+## 📚 プロジェクトドキュメント
 
-```shellscript
-npm run dev
+詳細な情報は以下のドキュメントを参照してください：
+
+- [REQUIREMENTS.md](./docs/REQUIREMENTS.md) - 機能要件の詳細仕様とロードマップ
+- [ARCHITECTURE.md](./docs/ARCHITECTURE.md) - 技術アーキテクチャと設計思想
+
+## 🛠️ 技術スタック
+
+- **フロントエンド**: React 18, Remix
+- **バックエンド**: Remix (Node.js)
+- **データベース**: PostgreSQL (Supabase)
+- **認証**: Auth0
+- **ストレージ**: Supabase Storage
+- **スタイリング**: Tailwind CSS, DaisyUI
+- **ビルドツール**: Vite
+- **リンター/フォーマッター**: Biome
+
+## 🚀 環境構築手順
+
+### 前提条件
+
+- Node.js (v20.x 以上)
+- npm
+- Supabaseアカウント
+
+### セットアップ
+
+1. リポジトリのクローン:
+
+```bash
+git clone [repository-url]
+cd shopping-wishlist-app
 ```
 
-## Deployment
+2. 環境変数の設定:
 
-First, build your app for production:
+`.env` ファイルを作成
 
-```sh
-npm run build
+3. Dockerコンテナの起動:
+```
+bashdocker-compose up
+```
+これで `http://localhost:5173` でアプリケーションにアクセスできます。
+
+
+## 📁 プロジェクト構造
+
+```
+app/
+├── models/          # データアクセス層とビジネスロジック
+│   └── *.server.ts  # サーバーサイドのみで実行されるコード
+├── routes/          
+│   └── */           
+└── components/      # UIコンポーネント
+    └── features/    # 機能別コンポーネント
 ```
 
-Then run the app in production mode:
+## 📝 開発ワークフロー
 
-```sh
-npm start
-```
+1. **models/** にデータアクセス関数を追加
+   - Supabaseとのやり取りを行う関数を実装
+   - データの型定義やAPI関数を定義
 
-Now you'll need to pick a host to deploy it to.
+2. **routes/** にルートを追加
+   - URLパスに対応するルートファイルを作成
+   - `loader`関数で必要なデータを取得
+   - `action`関数でデータ更新処理を実行
 
-### DIY
+3. **components/** にUIコンポーネントを追加
+   - ルートから渡されたデータを表示するコンポーネント
+   - ユーザー入力を処理するフォームコンポーネント
 
-If you're familiar with deploying Node applications, the built-in Remix app server is production-ready.
+## 📊 開発ロードマップ
 
-Make sure to deploy the output of `npm run build`
-
-- `build/server`
-- `build/client`
-
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever css framework you prefer. See the [Vite docs on css](https://vitejs.dev/guide/features.html#css) for more information.
+詳しい開発ロードマップは [REQUIREMENTS.md](./docs/REQUIREMENTS.md) を参照してください。
