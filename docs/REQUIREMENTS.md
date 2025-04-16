@@ -1,3 +1,4 @@
+REQUIREMENTS.md
 # 「買いたいものリスト」アプリ機能ロードマップ
 ユーザーが本当に買いたいものを見極め、適切な金額で満足度の高い買い物を計画的に実行する
 
@@ -6,7 +7,6 @@
 ### 1. 買いたいものの追加
 - 商品名、説明の基本情報入力
 - 商品URLの追加と保存
-- URLからの商品情報自動取得
 
 ### 2. 優先度設定
 - 「必須」「高」「中」「低」の優先度ラベル
@@ -175,33 +175,26 @@ Supabaseの認証機能を使用
 - **実装場所**: `/app/models/wish-item.server.ts`
 - **呼び出し元**: `/app/routes/items/$itemId/mark-purchased.tsx` など
 
-### 8. URL情報取得（商品情報自動取得）【コア機能】
-- **API関数**: `scrapeProductInfo`
-- **入力**: `{ url }`
-- **出力**: `{ name, description, price, image_path }`
-- **実装場所**: `/app/utils/scraper.server.ts`
-- **呼び出し元**: `/app/routes/api/scrape-product-info.tsx`
-- **注**: Remixのリソースルートとして実装
 
 ## 拡張機能のAPI（第2段階以降）
 
-### 9. カテゴリ管理
+### 8. カテゴリ管理
 - **API関数**: `createCategory`, `getCategories`, `updateCategory`, `deleteCategory`
 - **実装場所**: `/app/models/category.server.ts`
 
-### 10. アイテムへのメモ追加
+### 9. アイテムへのメモ追加
 - **API関数**: `addItemNote`, `getItemNotes`, `updateItemNote`, `deleteItemNote`
 - **実装場所**: `/app/models/note.server.ts`
 
-### 11. 購入履歴統計
+### 10. 購入履歴統計
 - **API関数**: `getPurchaseStats`
 - **実装場所**: `/app/models/stats.server.ts`
 
-### 12. リスト共有
+### 11. リスト共有
 - **API関数**: `createShareableLink`, `getSharedList`, `updateShareSettings`
 - **実装場所**: `/app/models/share.server.ts`
 
-### 13. 画像アップロード
+### 12. 画像アップロード
 - **API関数**: `uploadImage`
 - **実装場所**: `/app/utils/storage.server.ts`
 - **呼び出し元**: `/app/routes/api/upload-image.tsx`
@@ -219,10 +212,7 @@ Supabaseの認証機能を使用
 ### URL情報取得(MVPでは実装しない)
 - サーバーサイドスクレイピング（cheerio, puppeteerなど）
 - OGPメタタグの取得
-
-### データバリデーション
-- Zodを使用したスキーマ検証
-- フォーム入力値の検証（Remix Form）
+- 
 
 ### エラーハンドリング
 - Remixのエラーバウンダリを活用
