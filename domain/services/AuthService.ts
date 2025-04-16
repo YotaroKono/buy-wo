@@ -1,7 +1,7 @@
 
 import { redirect } from '@remix-run/node';
 import { User } from 'domain/models/user/User';
-import { commitSession, getSession } from '~/utils/auth.server';
+import { commitSession, getSession } from '~/models/auth.server';
 import { UserId } from 'domain/models/user/UserId';
 import { AccessToken } from 'domain/models/auth/AccessToken';
 import { RefreshToken } from 'domain/models/auth/RefreshToken';
@@ -104,7 +104,6 @@ export class AuthService {
   }
 }
 
-// TODO: 別ファイルに移動する
 interface SessionData {
   userId: string;
   accessToken: string;

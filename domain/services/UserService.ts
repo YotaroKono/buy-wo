@@ -6,7 +6,6 @@ import { RefreshToken } from "domain/models/auth/RefreshToken";
 import { IUserRepository } from "domain/models/user/IUserRepository";
 
 
-// ユーザー情報の取得・保存を担当するサービス
 export class UserService {
   constructor(
     private readonly tokenService: TokenService,
@@ -21,7 +20,7 @@ export class UserService {
     email: string;
     accessToken: string;
     refreshToken?: string;
-    expiresIn: number;
+    expiresIn: Date;
     name?: string;
     picture?: string;
   }): Promise<User> {
@@ -38,7 +37,7 @@ export class UserService {
       profileData.name,
       profileData.picture,
       profileData.email, 
-      
+
     );
     
     // リフレッシュトークンが提供されていれば追加
@@ -53,8 +52,20 @@ export class UserService {
     
     // Supabaseにユーザー情報を保存
     await this.ensureUserInSupabase(user);
+
+    const refreshTokenInstance = user.getRefreshToken();
+    const refreshToken = refreshTokenInstance ? refreshTokenInstance.getToken() : undefined;
+
     
-    return user;
+    
+    return {
+      userId: userId,
+      email: profileData.email,
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+      expiresAt: AccessToken?.getExpiresAt(),
+      supabaseToken: supabaseToken,
+    };
   }
   
   private async ensureUserInSupabase(user: User): Promise<void> {

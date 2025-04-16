@@ -11,7 +11,7 @@ export class User {
     private supabaseToken?: SupabaseToken,
     private _name?: string,
     private _picture_url?: string,
-    private _email?: string
+    private _email?: string,
 ) {}
 
     static create(
@@ -21,7 +21,7 @@ export class User {
         supabaseToken?: SupabaseToken,
         name?: string,
         picture_url?: string,
-        email?: string
+        email?: string,
     ): User {
         return new User(userId, accessToken, refreshToken, supabaseToken, name, picture_url, email);
     }
@@ -30,7 +30,7 @@ export class User {
         return this._userId;
     }
 
-    get email(): string {
+    get email(): string | undefined {
         return this._email!;
     }
 
@@ -41,7 +41,6 @@ export class User {
     get picture_url(): string | undefined {
         return this._picture_url;
     }
-
 
     getAccessToken(): AccessToken {
         return this.accessToken;
@@ -60,14 +59,14 @@ export class User {
     }
 
     withUpdatedAccessToken(newAccessToken: AccessToken): User {
-        return new User(this._userId, newAccessToken, this.refreshToken, this.supabaseToken);
+        return new User(this._userId, newAccessToken, this.refreshToken, this.supabaseToken, this._name, this._picture_url, this._email, this._expiresIn);
     }
 
     withUpdatedSupabaseToken(newSupabaseToken: SupabaseToken): User {
-        return new User(this._userId, this.accessToken, this.refreshToken, newSupabaseToken);
+        return new User(this._userId, this.accessToken, this.refreshToken, newSupabaseToken, this._name, this._picture_url, this._email, this._expiresIn);
     }
 
     withUpdatedRefreshToken(newRefreshToken: RefreshToken): User {
-        return new User(this._userId, this.accessToken, newRefreshToken, this.supabaseToken);
+        return new User(this._userId, this.accessToken, newRefreshToken, this.supabaseToken, this._name, this._picture_url, this._email, this._expiresIn);
     }
 }
