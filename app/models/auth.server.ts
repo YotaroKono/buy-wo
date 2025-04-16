@@ -192,8 +192,9 @@ export async function requireUser(request: Request) {
   const session = await getSession(request.headers.get("Cookie"));
   const user = session.get("user") as User | undefined;
 
+  // TODO; 無限リダイレクトが起こるので修正必要
   if (!user) {
-    throw redirect("/login");
+    throw redirect("/");
   }
 
   return user;
