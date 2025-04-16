@@ -9,7 +9,7 @@
 詳細な情報は以下のドキュメントを参照してください：
 
 - [REQUIREMENTS.md](./docs/REQUIREMENTS.md) - 機能要件の詳細仕様とロードマップ
-- [ARCHITECTURE.md](./docs/ARCHITECTURE.md) - 技術アーキテクチャと設計思想
+- [ARCHTECTURE.md](./docs/ARCHTECHTURE.md) - 技術アーキテクチャと設計思想
 
 ## 🛠️ 技術スタック
 
