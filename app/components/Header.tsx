@@ -20,7 +20,7 @@ export const Header = ({ isAuthenticated, user }: HeaderProps) => {
 			{isAuthenticated ? (
 				<div>会員済み</div>
 			) : (
-				<Form action="/login" method="post">
+				<Form action="/api/login" method="post">
 				<button type="submit" className="btn btn-accent">
 					ログイン・会員登録
 				</button>
