@@ -1,5 +1,5 @@
 import { getSupabaseClient } from "./supabase.server";
-
+import { v4 as uuidv4 } from 'uuid';
 export interface WishItem {
   id: string;
   user_id: string;
@@ -125,21 +125,59 @@ export async function getWishItems(
 export async function createWishItem(
   userId: string,
   supabaseToken: string,
-  wishItem: Omit<WishItem, "id" | "user_id" | "created_at" | "updated_at">
+  wishItem: Omit<WishItem, "id" | "user_id" | "created_at" | "updated_at"> & { image?: File | null }
 ): Promise<WishItem> {
   const supabase = getSupabaseClient(supabaseToken);
   if (!supabase) {
     throw new Error("Supabase clientの生成に失敗しました");
   }
 
+  // サーバーサイドでIDを生成
+  const newItemId = uuidv4();
+  let imagePath: string | null = wishItem.image_path || null;
+
+  if (wishItem.image) {
+    const file = wishItem.image;
+    if (!(file instanceof File)) {
+      throw new Error("image must be a File");
+    }
+    const safeUserId = userId.replace(/[|]/g, '-');
+    
+    // 新しく生成したIDをファイル名に使用
+    const fileName = `${safeUserId}/${newItemId}/${Date.now()}`;
+    console.log("fileName", fileName);
+    console.log("userId", userId);
+
+    // TODO: ここで認証状態がundifinedになっているため、strageのRLSの権限違反になる
+    const { data: { user } } = await supabase.auth.getUser();
+      console.log("認証状態:", !!user, "ユーザーID:", user?.id);
+    
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from("wish-item-images")
+      .upload(fileName, file, {
+        cacheControl: "3600",
+        upsert: false,
+      });
+
+    if (uploadError) {
+      console.error("Error uploading image:", uploadError);
+      throw new Error("画像のアップロードに失敗しました");
+    }
+    imagePath = uploadData.path;
+  }
+  // 生成したIDを使用してDBに挿入
   const { data, error } = await supabase
     .from("wish_item")
     .insert({
+      id: newItemId, // 生成したIDを指定
       ...wishItem,
+      image_path: imagePath,
       user_id: userId,
     })
     .select("*")
     .single();
+
+  
 
   if (error) {
     console.error("Error creating wish item:", error);
