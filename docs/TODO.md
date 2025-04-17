@@ -1,0 +1,3 @@
+# MVP優先で後回しにしたタスク
+1. routeとcomponentに切り分けてリファクタリングする
+2. supabaseのwish-item-imagesのバケットをフラットな構造ではなくユーザーごとにファイルを分けて管理する
