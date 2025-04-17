@@ -7,7 +7,7 @@ export const action = async ({ request }: { request: Request }) => {
   const name = formData.get("name") as string | null;
   const description = formData.get("description") as string | null;
   const product_url = formData.get("product_url") as string | null;
-  const image_path = formData.get("image_path") as string | null;
+  const image = formData.get("image") as File | null;
   const price = formData.get("price") as string | null;
   const currency = formData.get("currency") as string | null;
   const priority = formData.get("priority") as "high" | "middle" | "low" | null;
@@ -26,6 +26,26 @@ export const action = async ({ request }: { request: Request }) => {
     };
   }
 
+  // 画像ファイルのバリデーション
+  if (image && image.size > 0) {
+    // ファイルサイズを5MBに制限
+    if (image.size > 5 * 1024 * 1024) {
+      return {
+        success: false,
+        error: "画像サイズは5MB以下にしてください",
+      };
+    }
+
+    // ファイルタイプをチェック
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(image.type)) {
+      return {
+        success: false,
+        error: "対応している画像形式は JPEG, PNG, GIF, WEBP のみです",
+      };
+    }
+  }
+
   try {
     const user = await requireUser(request);
     const supabaseToken = createSupabaseToken(user.userId);
@@ -34,7 +54,9 @@ export const action = async ({ request }: { request: Request }) => {
       name,
       description,
       product_url,
-      image_path,
+      // image_pathはnullに設定し、imageプロパティも渡す
+      image_path: null,
+      image: image && image.size > 0 ? image : null,
       price: price ? parseFloat(price) : null,
       currency: currency as 'JPY' | 'USD',
       priority,
@@ -53,9 +75,9 @@ export const action = async ({ request }: { request: Request }) => {
 
 export default function NewItem() {
   const actionData = useActionData<{ success?: boolean; error?: string }>();
-  const transition = useNavigation();
+  const navigation = useNavigation();
 
-  const isSubmitting = transition.state === "submitting";
+  const isSubmitting = navigation.state === "submitting";
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -103,7 +125,8 @@ export default function NewItem() {
         </div>
       )}
 
-      <Form method="post" className="space-y-4">
+      {/* encType="multipart/form-data" を追加 */}
+      <Form method="post" encType="multipart/form-data" className="space-y-4">
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700">
             商品名
@@ -141,15 +164,19 @@ export default function NewItem() {
         </div>
 
         <div>
-          <label htmlFor="image_path" className="block text-sm font-medium text-gray-700">
-            画像URL
+          <label htmlFor="image" className="block text-sm font-medium text-gray-700">
+            商品画像
           </label>
           <input
-            type="url"
-            id="image_path"
-            name="image_path"
+            type="file"
+            id="image"
+            name="image"
+            accept="image/jpeg,image/png,image/gif,image/webp"
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           />
+          <p className="text-xs text-gray-500 mt-1">
+            対応形式: JPEG, PNG, GIF, WEBP (最大5MB)
+          </p>
         </div>
 
         <div>
@@ -161,6 +188,7 @@ export default function NewItem() {
             id="price"
             name="price"
             step="0.01"
+            min="0"
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           />
         </div>
