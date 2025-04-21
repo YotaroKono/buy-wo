@@ -119,9 +119,31 @@ export async function getWishItems(
     throw new Error("Wish itemsの取得に失敗しました");
   }
 
-  return data as WishItem[];
+  const items = data as WishItem[];
+  
+  // 画像パスがあるアイテムに対して署名付きURLを生成
+  const itemsWithUrls = await Promise.all(
+    items.map(async (item) => {
+      if (item.image_path) {
+        const { data: urlData, error: urlError } = await supabase.storage
+          .from("wish-item-images")
+          .createSignedUrl(item.image_path, 60 * 60); // 1時間有効
+        
+        if (!urlError && urlData) {
+          return {
+            ...item,
+            image_path: urlData.signedUrl
+          };
+        }
+      }
+      return item;
+    })
+  );
+
+  return itemsWithUrls;
 }
 
+// アップロード処理（パスをDBに保存）
 export async function createWishItem(
   userId: string,
   supabaseToken: string,
@@ -145,8 +167,6 @@ export async function createWishItem(
     
     // 新しく生成したIDをファイル名に使用
     const fileName = `${safeUserId}/${newItemId}/${Date.now()}`;
-    console.log("fileName", fileName);
-    console.log("userId", userId);
     
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from("wish-item-images")
@@ -159,6 +179,8 @@ export async function createWishItem(
       console.error("Error uploading image:", uploadError);
       throw new Error("画像のアップロードに失敗しました");
     }
+    
+    // パスのみをDBに保存
     imagePath = uploadData.path;
   }
   
@@ -169,13 +191,12 @@ export async function createWishItem(
     .insert({
       id: newItemId,
       ...dbWishItem,
-      image_path: imagePath,
+      image_path: imagePath, // パスのみを保存
       user_id: userId,
     })
     .select("*")
     .single();
   
-
   if (error) {
     console.error("Error creating wish item:", error);
     throw new Error("Wish itemの作成に失敗しました");
@@ -186,4 +207,107 @@ export async function createWishItem(
   }
 
   return data as WishItem;
+}
+
+// アイテム表示時に署名付きURLを生成するヘルパー関数
+export async function getWishItemWithImageUrl(
+  itemId: string,
+  supabaseToken: string
+): Promise<WishItem> {
+  const supabase = getSupabaseClient(supabaseToken);
+  if (!supabase) {
+    throw new Error("Supabase clientの生成に失敗しました");
+  }
+  
+  const { data, error } = await supabase
+    .from("wish_item")
+    .select("*")
+    .eq("id", itemId)
+    .single();
+  
+  if (error || !data) {
+    console.error("Error fetching wish item:", error);
+    throw new Error("Wish itemの取得に失敗しました");
+  }
+  
+  const item = data as WishItem;
+  
+  // 画像パスがある場合、署名付きURLを生成
+  if (item.image_path) {
+    const { data: urlData, error: urlError } = await supabase.storage
+      .from("wish-item-images")
+      .createSignedUrl(item.image_path, 60 * 60); // 例: 1時間有効
+    
+    if (urlError) {
+      console.error("Error generating signed URL:", urlError);
+    } else if (urlData) {
+      // ここで返すオブジェクトの画像パスを署名付きURLで上書き
+      item.image_path = urlData.signedUrl;
+    }
+  }
+  
+  return item;
+}
+
+// 複数のアイテムを取得し、画像URLを生成するヘルパー関数
+export async function getWishItemsWithImageUrls(
+  userId: string,
+  supabaseToken: string,
+  status?: "unpurchased" | "purchased",
+  priority?: "high" | "middle" | "low",
+  sortBy?: string,
+  sortOrder?: "asc" | "desc"
+): Promise<WishItem[]> {
+  const supabase = getSupabaseClient(supabaseToken);
+  if (!supabase) {
+    throw new Error("Supabase clientの生成に失敗しました");
+  }
+
+  // 基本的なクエリ
+  let query = supabase
+    .from("wish_item")
+    .select("*")
+    .eq("user_id", userId);
+
+  if (status) {
+    query = query.eq("status", status);
+  }
+
+  if (priority) {
+    query = query.eq("priority", priority);
+  }
+
+  if (sortBy) {
+    query = query.order(sortBy, { ascending: sortOrder === "asc" });
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error("Error fetching wish items:", error);
+    throw new Error("Wish itemsの取得に失敗しました");
+  }
+
+  const items = data as WishItem[];
+  
+  // 画像パスがあるアイテムに対して署名付きURLを生成
+  const itemsWithUrls = await Promise.all(
+    items.map(async (item) => {
+      if (item.image_path) {
+        const { data: urlData, error: urlError } = await supabase.storage
+          .from("wish-item-images")
+          .createSignedUrl(item.image_path, 60 * 60); // 例: 1時間有効
+        
+        if (!urlError && urlData) {
+          return {
+            ...item,
+            image_path: urlData.signedUrl
+          };
+        }
+      }
+      return item;
+    })
+  );
+
+  return itemsWithUrls;
 }
