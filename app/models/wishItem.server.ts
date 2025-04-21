@@ -147,10 +147,6 @@ export async function createWishItem(
     const fileName = `${safeUserId}/${newItemId}/${Date.now()}`;
     console.log("fileName", fileName);
     console.log("userId", userId);
-
-    // TODO: ここで認証状態がundifinedになっているため、strageのRLSの権限違反になる
-    const { data: { user } } = await supabase.auth.getUser();
-      console.log("認証状態:", !!user, "ユーザーID:", user?.id);
     
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from("wish-item-images")
@@ -165,18 +161,19 @@ export async function createWishItem(
     }
     imagePath = uploadData.path;
   }
+  
   // 生成したIDを使用してDBに挿入
+  const { image, ...dbWishItem } = wishItem;
   const { data, error } = await supabase
     .from("wish_item")
     .insert({
-      id: newItemId, // 生成したIDを指定
-      ...wishItem,
+      id: newItemId,
+      ...dbWishItem,
       image_path: imagePath,
       user_id: userId,
     })
     .select("*")
     .single();
-
   
 
   if (error) {
