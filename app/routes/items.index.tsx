@@ -2,10 +2,11 @@ import { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link, useNavigate } from "@remix-run/react";
 import WishItemList from "~/components/feature/wishItem/wishItemList";
 import { requireUser, createSupabaseToken } from "~/models/auth.server";
-import { getWishItems, WishItem } from "~/models/wishItem.server";
+import { getWishItems } from "~/models/wishItem.server";
+import type { WishItem } from "~/utils/types/wishItem";
 
 // ローダーの返り値の型を定義
-type LoaderData = 
+type LoaderData =
   | { success: true; wishItems: WishItem[]; error?: never }
   | { success: false; error: string; wishItems?: never };
 
@@ -13,8 +14,8 @@ export const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderDat
   try {
     const user = await requireUser(request);
     const supabaseToken = createSupabaseToken(user.userId);
-    let wishItems = await getWishItems(user.userId, supabaseToken);
-    return { success: true, wishItems: wishItems};
+    const wishItems = await getWishItems(user.userId, supabaseToken) as WishItem[];
+    return { success: true, wishItems: wishItems };
   } catch (error) {
     console.error(error);
     return { success: false, error: "Failed to fetch wish items" };
