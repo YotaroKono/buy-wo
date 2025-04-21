@@ -1,6 +1,6 @@
 import { Link } from "@remix-run/react";
-import type { WishItem } from "~/models/wishItem.server";
-import { formatPrice, getPriorityClass, getPriorityLabel } from "~/models/wishItem.server";
+import type { WishItem } from "~/utils/types/wishItem";
+import { formatPrice, getPriorityClass, getPriorityLabel } from "~/utils/wishItem";
 
 interface WishItemCardProps {
   item: WishItem;

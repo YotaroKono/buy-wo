@@ -1,5 +1,5 @@
 import { Link } from "@remix-run/react";
-import type { WishItem } from "~/models/wishItem.server";
+import type { WishItem } from "~/utils/types/wishItem";
 import WishItemCard from "./wishItemCard";
 
 interface WishItemListProps {
