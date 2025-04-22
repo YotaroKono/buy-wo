@@ -1,5 +1,7 @@
 import { getSupabaseClient } from "./supabase.server";
 import { v4 as uuidv4 } from 'uuid';
+import { getSignedUrl } from "../utils/supabase/SignedUrlCache.ts";
+
 export interface WishItem {
   id: string;
   user_id: string;
@@ -121,18 +123,16 @@ export async function getWishItems(
 
   const items = data as WishItem[];
   
-  // 画像パスがあるアイテムに対して署名付きURLを生成
+  // 画像パスがあるアイテムに対してキャッシュ対応の署名付きURLを生成
   const itemsWithUrls = await Promise.all(
     items.map(async (item) => {
       if (item.image_path) {
-        const { data: urlData, error: urlError } = await supabase.storage
-          .from("wish-item-images")
-          .createSignedUrl(item.image_path, 60 * 60); // 1時間有効
+        const signedUrl = await getSignedUrl(supabase, item.image_path);
         
-        if (!urlError && urlData) {
+        if (signedUrl) {
           return {
             ...item,
-            image_path: urlData.signedUrl
+            image_path: signedUrl
           };
         }
       }
@@ -206,10 +206,15 @@ export async function createWishItem(
     throw new Error("Wish itemの作成に失敗しました");
   }
 
+  // 新しい画像がある場合は、署名付きURLを生成してキャッシュする
+  if (data.image_path) {
+    await getSignedUrl(supabase, data.image_path);
+  }
+
   return data as WishItem;
 }
 
-// アイテム表示時に署名付きURLを生成するヘルパー関数
+// アイテム表示時に署名付きURLを生成するヘルパー関数（キャッシュ対応）
 export async function getWishItemWithImageUrl(
   itemId: string,
   supabaseToken: string
@@ -232,24 +237,19 @@ export async function getWishItemWithImageUrl(
   
   const item = data as WishItem;
   
-  // 画像パスがある場合、署名付きURLを生成
+  // 画像パスがある場合、キャッシュ対応の署名付きURLを生成
   if (item.image_path) {
-    const { data: urlData, error: urlError } = await supabase.storage
-      .from("wish-item-images")
-      .createSignedUrl(item.image_path, 60 * 60); // 例: 1時間有効
+    const signedUrl = await getSignedUrl(supabase, item.image_path);
     
-    if (urlError) {
-      console.error("Error generating signed URL:", urlError);
-    } else if (urlData) {
-      // ここで返すオブジェクトの画像パスを署名付きURLで上書き
-      item.image_path = urlData.signedUrl;
+    if (signedUrl) {
+      item.image_path = signedUrl;
     }
   }
   
   return item;
 }
 
-// 複数のアイテムを取得し、画像URLを生成するヘルパー関数
+// 複数のアイテムを取得し、画像URLを生成するヘルパー関数（キャッシュ対応）
 export async function getWishItemsWithImageUrls(
   userId: string,
   supabaseToken: string,
@@ -290,18 +290,16 @@ export async function getWishItemsWithImageUrls(
 
   const items = data as WishItem[];
   
-  // 画像パスがあるアイテムに対して署名付きURLを生成
+  // 画像パスがあるアイテムに対してキャッシュ対応の署名付きURLを生成
   const itemsWithUrls = await Promise.all(
     items.map(async (item) => {
       if (item.image_path) {
-        const { data: urlData, error: urlError } = await supabase.storage
-          .from("wish-item-images")
-          .createSignedUrl(item.image_path, 60 * 60); // 例: 1時間有効
+        const signedUrl = await getSignedUrl(supabase, item.image_path);
         
-        if (!urlError && urlData) {
+        if (signedUrl) {
           return {
             ...item,
-            image_path: urlData.signedUrl
+            image_path: signedUrl
           };
         }
       }
