@@ -18,7 +18,6 @@
 
 ## 基本ルール
 - 段階的実装アプローチ:
-   - 第1段階のコア機能(MVP)から始め、順次拡張機能を追加する
    - 各段階が完了したことを確認してから次の段階に進む
    - 機能のオーバーエンジニアリングを避ける
 
@@ -109,19 +108,6 @@ AIはこれらのステップを自動的に判断して進め、1回のリク�
 - ENUMタイプの適切な使用（優先度、ステータス）
 - 適切な外部キー制約の設定
 - Supabase環境での最適なクエリ設計
-
-## API設計ガイドライン
-- API関数は仕様書で定義された名前・パスに従う
-- コア機能（MVP）の8つのAPI関数を優先実装:
-  1. `createWishItem`
-  2. `getWishItems`
-  3. `getWishItem`
-  4. `updateWishItem`
-  5. `deleteWishItem`
-  6. `updateItemPriority`
-  7. `markItemStatus`
-  8. `scrapeProductInfo` (Cheerioを使用)
-- 拡張機能のAPIは第2段階以降で実装
 
 ## コーディングガイドライン
 ### 一般原則
