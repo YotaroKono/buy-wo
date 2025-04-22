@@ -1,4 +1,5 @@
 import { Form, useActionData, useNavigation } from "@remix-run/react";
+import { useState, useRef } from "react";
 import { createWishItem } from "~/models/wishItem.server";
 import { requireUser, createSupabaseToken } from "~/models/auth.server";
 
@@ -76,8 +77,59 @@ export const action = async ({ request }: { request: Request }) => {
 export default function NewItem() {
   const actionData = useActionData<{ success?: boolean; error?: string }>();
   const navigation = useNavigation();
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isSubmitting = navigation.state === "submitting";
+
+  // 画像ファイルが選択されたときのハンドラー
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // ファイルサイズと形式のチェック
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      
+      if (file.size > 5 * 1024 * 1024) {
+        alert("画像サイズは5MB以下にしてください");
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+        setImagePreview(null);
+        return;
+      }
+      
+      if (!allowedTypes.includes(file.type)) {
+        alert("対応している画像形式は JPEG, PNG, GIF, WEBP のみです");
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+        setImagePreview(null);
+        return;
+      }
+      
+      // プレビュー用のURLを作成
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
+    } else {
+      setImagePreview(null);
+    }
+  };
+
+  // コンポーネントがアンマウントされたときにURLを解放
+  const cleanupPreview = () => {
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
+  };
+
+  // フォーム送信成功後にプレビューをクリア
+  if (actionData?.success && imagePreview) {
+    cleanupPreview();
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -173,10 +225,52 @@ export default function NewItem() {
             name="image"
             accept="image/jpeg,image/png,image/gif,image/webp"
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            onChange={handleImageChange}
+            ref={fileInputRef}
           />
           <p className="text-xs text-gray-500 mt-1">
             対応形式: JPEG, PNG, GIF, WEBP (最大5MB)
           </p>
+          
+          {/* 画像プレビュー表示エリア */}
+          {imagePreview && (
+            <div className="mt-4">
+              <p className="text-sm font-medium text-gray-700 mb-2">プレビュー</p>
+              <div className="relative w-48 h-48 border border-gray-200 rounded-md overflow-hidden">
+                <img
+                  src={imagePreview}
+                  alt="画像プレビュー"
+                  className="object-contain w-full h-full"
+                />
+                <button
+                  type="button"
+                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 w-6 h-6 flex items-center justify-center"
+                  onClick={() => {
+                    cleanupPreview();
+                    setImagePreview(null);
+                    if (fileInputRef.current) {
+                      fileInputRef.current.value = "";
+                    }
+                  }}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         <div>
