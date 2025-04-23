@@ -1,7 +1,9 @@
 import { Form, useActionData, useNavigation } from "@remix-run/react";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { createWishItem } from "~/models/wishItem.server";
 import { requireUser, createSupabaseToken } from "~/models/auth.server";
+import { redirect } from "@remix-run/node";
+import Modal from "~/components/ErrorModal"; // モーダルコンポーネントをインポート
 
 export const action = async ({ request }: { request: Request }) => {
   const formData = await request.formData();
@@ -55,7 +57,6 @@ export const action = async ({ request }: { request: Request }) => {
       name,
       description,
       product_url,
-      // image_pathはnullに設定し、imageプロパティも渡す
       image_path: null,
       image: image && image.size > 0 ? image : null,
       price: price ? parseFloat(price) : null,
@@ -67,6 +68,7 @@ export const action = async ({ request }: { request: Request }) => {
       purchase_location: null,
     });
 
+    // 成功の場合、ページ遷移はクライアントサイドで行うため、成功フラグのみ返す
     return { success: true };
   } catch (error) {
     console.error(error);
@@ -79,8 +81,19 @@ export default function NewItem() {
   const navigation = useNavigation();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
 
   const isSubmitting = navigation.state === "submitting";
+
+  // アクションデータが変更されたときにモーダル表示を管理
+  useEffect(() => {
+    if (actionData?.success) {
+      setShowSuccessModal(true);
+    } else if (actionData?.error) {
+      setShowErrorModal(true);
+    }
+  }, [actionData]);
 
   // 画像ファイルが選択されたときのハンドラー
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -131,203 +144,292 @@ export default function NewItem() {
     }
   }
 
+  // 成功モーダルの閉じるアクション - アイテム一覧へリダイレクト
+  const handleSuccessModalClose = () => {
+    setShowSuccessModal(false);
+    window.location.href = "/items";
+  };
+
+  // エラーモーダルの閉じるアクション
+  const handleErrorModalClose = () => {
+    setShowErrorModal(false);
+  };
+
   return (
-    <div className="container mx-auto py-8 px-4">
-      <h1 className="text-2xl font-bold mb-4">新しいアイテムを追加</h1>
+    <div className="min-h-screen py-10">
+      <div className="max-w-2xl mx-auto px-4">
+        <div className="card bg-base-100 shadow-xl">
+          <div className="card-body">
+            <h1 className="card-title text-2xl font-bold mb-6 text-primary justify-center">
+              新しいアイテムを追加
+            </h1>
 
-      {actionData?.error && (
-        <div className="alert alert-error shadow-lg mb-4">
-          <div>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="stroke-current flex-shrink-0 h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
+            {/* 成功モーダル */}
+            <Modal
+              isOpen={showSuccessModal}
+              onClose={handleSuccessModalClose}
+              title="成功"
+              width="w-full max-w-md"
+              actions={
+                <button onClick={handleSuccessModalClose} className="btn btn-primary">
+                  アイテム一覧へ
+                </button>
+              }
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M10 14l2-2m0 0l2-2m-2 2l-2 2m2-2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            <span>{actionData.error}</span>
-          </div>
-        </div>
-      )}
-
-      {actionData?.success && (
-        <div className="alert alert-success shadow-lg mb-4">
-          <div>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="stroke-current flex-shrink-0 h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-            <span>アイテムが正常に追加されました！</span>
-          </div>
-        </div>
-      )}
-
-      {/* encType="multipart/form-data" を追加 */}
-      <Form method="post" encType="multipart/form-data" className="space-y-4">
-        <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-            商品名
-          </label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-            説明
-          </label>
-          <textarea
-            id="description"
-            name="description"
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="product_url" className="block text-sm font-medium text-gray-700">
-            商品URL
-          </label>
-          <input
-            type="url"
-            id="product_url"
-            name="product_url"
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="image" className="block text-sm font-medium text-gray-700">
-            商品画像
-          </label>
-          <input
-            type="file"
-            id="image"
-            name="image"
-            accept="image/jpeg,image/png,image/gif,image/webp"
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-            onChange={handleImageChange}
-            ref={fileInputRef}
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            対応形式: JPEG, PNG, GIF, WEBP (最大5MB)
-          </p>
-          
-          {/* 画像プレビュー表示エリア */}
-          {imagePreview && (
-            <div className="mt-4">
-              <p className="text-sm font-medium text-gray-700 mb-2">プレビュー</p>
-              <div className="relative w-48 h-48 border border-gray-200 rounded-md overflow-hidden">
-                <img
-                  src={imagePreview}
-                  alt="画像プレビュー"
-                  className="object-contain w-full h-full"
-                />
-                <button
-                  type="button"
-                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 w-6 h-6 flex items-center justify-center"
-                  onClick={() => {
-                    cleanupPreview();
-                    setImagePreview(null);
-                    if (fileInputRef.current) {
-                      fileInputRef.current.value = "";
-                    }
-                  }}
+              <div className="text-center py-4">
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  className="h-16 w-16 text-success mx-auto mb-4" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" 
+                  />
+                </svg>
+                <p className="text-lg font-medium">アイテムが正常に追加されました！</p>
+              </div>
+            </Modal>
+
+            {/* エラーモーダル */}
+            <Modal
+              isOpen={showErrorModal}
+              onClose={handleErrorModalClose}
+              title="エラー"
+              width="w-full max-w-md"
+              actions={
+                <button onClick={handleErrorModalClose} className="btn btn-primary">
+                  閉じる
+                </button>
+              }
+            >
+              <div className="text-center py-4">
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  className="h-16 w-16 text-error mx-auto mb-4" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" 
+                  />
+                </svg>
+                <p className="text-lg font-medium">{actionData?.error}</p>
+              </div>
+            </Modal>
+
+            <Form method="post" encType="multipart/form-data" className="space-y-6">
+              <div className="form-control">
+                <label className="label" htmlFor="name">
+                  <span className="label-text font-medium">商品名</span>
+                  <span className="label-text-alt text-error">必須</span>
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  required
+                  placeholder="欲しいアイテム名を入力"
+                  className="input input-bordered input-primary w-full"
+                />
+              </div>
+
+              <div className="form-control">
+                <label className="label" htmlFor="description">
+                  <span className="label-text font-medium">説明</span>
+                </label>
+                <textarea
+                  id="description"
+                  name="description"
+                  placeholder="アイテムの詳細、色、サイズなど"
+                  className="textarea textarea-bordered h-24"
+                />
+              </div>
+
+              <div className="form-control">
+                <label className="label" htmlFor="product_url">
+                  <span className="label-text font-medium">商品URL</span>
+                </label>
+                <div className="input-group">
+                  <input
+                    type="url"
+                    id="product_url"
+                    name="product_url"
+                    placeholder="https://example.com/product"
+                    className="input input-bordered w-full"
+                  />
+                </div>
+              </div>
+              
+              <div className="form-control">
+                <label className="label" htmlFor="image">
+                  <span className="label-text font-medium">商品画像</span>
+                </label>
+                <div className="flex flex-col gap-3">
+                  <input
+                    type="file"
+                    id="image"
+                    name="image"
+                    accept="image/jpeg,image/png,image/gif,image/webp"
+                    className="file-input file-input-bordered w-full"
+                    onChange={handleImageChange}
+                    ref={fileInputRef}
+                  />
+                  <p className="text-xs text-base-content opacity-70">
+                    対応形式: JPEG, PNG, GIF, WEBP (最大5MB)
+                  </p>
+                  
+                  {/* 画像プレビュー表示エリア */}
+                  {imagePreview && (
+                    <div className="mt-2">
+                      <div className="divider text-xs">プレビュー</div>
+                      <div className="relative w-48 h-48 border border-base-300 rounded-lg overflow-hidden bg-base-200">
+                        <img
+                          src={imagePreview}
+                          alt="画像プレビュー"
+                          className="object-contain w-full h-full"
+                        />
+                        <button
+                          type="button"
+                          className="btn btn-circle btn-error btn-sm absolute top-2 right-2"
+                          onClick={() => {
+                            cleanupPreview();
+                            setImagePreview(null);
+                            if (fileInputRef.current) {
+                              fileInputRef.current.value = "";
+                            }
+                          }}
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-4 w-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="form-control">
+                  <label className="label" htmlFor="price">
+                    <span className="label-text font-medium">価格</span>
+                  </label>
+                  <input
+                    type="number"
+                    id="price"
+                    name="price"
+                    step="0.01"
+                    min="0"
+                    placeholder="0.00"
+                    className="input input-bordered w-full"
+                  />
+                </div>
+                
+                <div className="form-control">
+                  <label className="label" htmlFor="currency">
+                    <span className="label-text font-medium">通貨</span>
+                    <span className="label-text-alt text-error">必須</span>
+                  </label>
+                  <select
+                    id="currency"
+                    name="currency"
+                    required
+                    className="select select-bordered w-full"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
+                    <option value="" disabled selected>選択してください</option>
+                    <option value="JPY">JPY (日本円)</option>
+                    <option value="USD">USD (米ドル)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-control">
+                <label className="label" htmlFor="priority">
+                  <span className="label-text font-medium">優先度</span>
+                  <span className="label-text-alt text-error">必須</span>
+                </label>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <label className="label cursor-pointer justify-start gap-2 flex-1 border rounded-lg p-2 hover:bg-base-200">
+                    <input type="radio" name="priority" value="high" className="radio radio-error" />
+                    <span className="flex items-center gap-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-error" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                      </svg>
+                      高
+                    </span>
+                  </label>
+                  <label className="label cursor-pointer justify-start gap-2 flex-1 border rounded-lg p-2 hover:bg-base-200">
+                    <input type="radio" name="priority" value="middle" className="radio radio-warning" />
+                    <span className="flex items-center gap-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
+                      </svg>
+                      中
+                    </span>
+                  </label>
+                  <label className="label cursor-pointer justify-start gap-2 flex-1 border rounded-lg p-2 hover:bg-base-200">
+                    <input type="radio" name="priority" value="low" className="radio radio-success" />
+                    <span className="flex items-center gap-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+                      </svg>
+                      低
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="card-actions justify-end mt-8">
+                <button
+                  type="reset"
+                  className="btn btn-outline"
+                >
+                  リセット
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="btn btn-primary"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <span className="loading loading-spinner loading-sm"></span>
+                      追加中...
+                    </>
+                  ) : (
+                    <>
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      </svg>
+                      追加
+                    </>
+                  )}
                 </button>
               </div>
-            </div>
-          )}
+            </Form>
+          </div>
         </div>
-
-        <div>
-          <label htmlFor="price" className="block text-sm font-medium text-gray-700">
-            価格
-          </label>
-          <input
-            type="number"
-            id="price"
-            name="price"
-            step="0.01"
-            min="0"
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="currency" className="block text-sm font-medium text-gray-700">
-            通貨
-          </label>
-          <select
-            id="currency"
-            name="currency"
-            required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-          >
-            <option value="" disabled>選択してください</option>
-            <option value="JPY">JPY</option>
-            <option value="USD">USD</option>
-          </select>
-        </div>
-
-        <div>
-          <label htmlFor="priority" className="block text-sm font-medium text-gray-700">
-            優先度
-          </label>
-          <select
-            id="priority"
-            name="priority"
-            required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-          >
-            <option value="" disabled>選択してください</option>
-            <option value="high">高</option>
-            <option value="middle">中</option>
-            <option value="low">低</option>
-          </select>
-        </div>
-
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="btn btn-primary"
-        >
-          {isSubmitting ? "追加中..." : "追加"}
-        </button>
-      </Form>
+      </div>
     </div>
   );
 }
