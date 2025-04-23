@@ -45,7 +45,7 @@ export const action = async ({ request }: { request: Request }) => {
       return {
         success: false,
         error: "対応している画像形式は JPEG, PNG, GIF, WEBP のみです",
-      };
+    };
     }
   }
 
@@ -399,13 +399,18 @@ export default function NewItem() {
                 </div>
               </div>
 
-              <div className="card-actions justify-end mt-8">
-                <button
-                  type="reset"
-                  className="btn btn-outline"
-                >
-                  リセット
-                </button>
+              <div className="card-actions flex mt-8">
+                  <div className="justify-start">
+                    <a href="/items" className="btn btn-outline">一覧に戻る</a>
+                  </div>
+                  <div className="flex-grow"></div>
+                  <button
+                    type="reset"
+                    className="btn btn-outline"
+                  >
+                    リセット
+                  </button>
+      
                 <button
                   type="submit"
                   disabled={isSubmitting}
