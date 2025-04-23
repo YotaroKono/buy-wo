@@ -59,21 +59,6 @@ export default function WishItemCard({ item }: WishItemCardProps) {
           <p className="font-semibold text-lg">{formatPrice(item.price, item.currency)}</p>
         )}
         
-        {item.description && (
-          <p className="text-sm text-gray-600 line-clamp-2">{item.description}</p>
-        )}
-        
-        {item.product_url && (
-          <a 
-            href={item.product_url} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="text-xs text-blue-500 hover:underline truncate block mt-1"
-          >
-            {item.product_url}
-          </a>
-        )}
-        
         <div className="card-actions justify-end mt-4">
           <Link 
             to={`/items/${item.id}`} 
