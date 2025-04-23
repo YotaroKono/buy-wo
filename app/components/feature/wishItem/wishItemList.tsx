@@ -4,13 +4,14 @@ import WishItemCard from "./wishItemCard";
 
 interface WishItemListProps {
   wishItems: WishItem[];
+  title?: string;
 }
 
-export default function WishItemList({ wishItems }: WishItemListProps) {
+export default function WishItemList({ wishItems, title = "買いたいものリスト" }: WishItemListProps) {
   return (
     <>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">買いたいものリスト</h1>
+        <h1 className="text-2xl font-bold">{title}</h1>
         <Link to="/items/new" className="btn btn-primary">
           新しいアイテムを追加
         </Link>

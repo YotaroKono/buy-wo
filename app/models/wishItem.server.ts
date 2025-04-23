@@ -1,87 +1,63 @@
 import { getSupabaseClient } from "./supabase.server";
 import { v4 as uuidv4 } from 'uuid';
 import { getSignedUrl } from "../utils/supabase/SignedUrlCache.ts";
+import { WishItem } from "~/utils/types/wishItem";
 
-export interface WishItem {
-  id: string;
-  user_id: string;
-  name: string;
-  description: string | null;
-  product_url: string | null;
-  image_path: string | null;
-  price: number | null;
-  currency: 'JPY' | 'USD';
-  priority: "high" | "middle" | "low";
-  status: "unpurchased" | "purchased";
-  purchase_date: string | null;
-  purchase_price: number | null;
-  purchase_location: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-// Helper function to format price based on currency
-export function formatPrice(price: number | null, currency: string | null | undefined = 'JPY'): string {
-  if (!price) return '';
-
-  // Use default currency if null or undefined
-  const currencyCode = currency || 'JPY';
-
-  // Currency formatting options by currency code
-  const formatOptions: Record<string, { locale: string, options: Intl.NumberFormatOptions }> = {
-    'JPY': {
-      locale: 'ja-JP',
-      options: {
-        style: 'currency',
-        currency: 'JPY',
-        currencyDisplay: 'symbol',
-      },
-    },
-    'USD': {
-      locale: 'en-US',
-      options: {
-        style: 'currency',
-        currency: 'USD',
-        currencyDisplay: 'symbol',
-      },
-    },
-  };
-
-  // Use configured format or fallback to default
-  const format = formatOptions[currencyCode] || {
-    locale: 'ja-JP',
-    options: { style: 'currency', currency: currencyCode },
-  };
-
-  return new Intl.NumberFormat(format.locale, format.options).format(price);
-}
-
-// Get priority display class for UI
-export function getPriorityClass(priority: string | null): string {
-  switch (priority) {
-    case 'high':
-      return 'badge-error';
-    case 'middle':
-      return 'badge-warning';
-    case 'low':
-      return 'badge-info';
-    default:
-      return 'badge-ghost';
+// アイテムの購入状態をトグルする関数
+export async function toggleItemPurchaseStatus(
+  itemId: string,
+  userId: string,
+  supabaseToken: string
+): Promise<{ success: boolean; status: "unpurchased" | "purchased" }> {
+  const supabase = getSupabaseClient(supabaseToken);
+  if (!supabase) {
+    throw new Error("Supabase clientの生成に失敗しました");
   }
-}
 
-// Get priority display text in Japanese
-export function getPriorityLabel(priority: string | null): string {
-  switch (priority) {
-    case 'high':
-      return '高';
-    case 'middle':
-      return '中';
-    case 'low':
-      return '低';
-    default:
-      return '未設定';
+  // まず現在のステータスを取得
+  const { data: currentItem, error: fetchError } = await supabase
+    .from("wish_item")
+    .select("status")
+    .eq("id", itemId)
+    .eq("user_id", userId)
+    .single();
+
+  if (fetchError) {
+    console.error("Error fetching wish item:", fetchError);
+    throw new Error("アイテムの取得に失敗しました");
   }
+
+  if (!currentItem) {
+    throw new Error("アイテムが見つからないか、更新権限がありません");
+  }
+
+  // 状態を反転
+  const newStatus = currentItem.status === "purchased" ? "unpurchased" : "purchased";
+  const now = new Date().toISOString();
+
+  // 購入日を設定または削除
+  const purchaseDate = newStatus === "purchased" ? now : null;
+
+  // 更新
+  const { error: updateError } = await supabase
+    .from("wish_item")
+    .update({
+      status: newStatus,
+      purchase_date: purchaseDate,
+      updated_at: now
+    })
+    .eq("id", itemId)
+    .eq("user_id", userId);
+
+  if (updateError) {
+    console.error("Error updating wish item status:", updateError);
+    throw new Error("アイテムの状態更新に失敗しました");
+  }
+
+  return {
+    success: true,
+    status: newStatus
+  };
 }
 
 export async function getWishItems(
@@ -142,7 +118,6 @@ export async function getWishItems(
 
   return itemsWithUrls;
 }
-
 // アップロード処理（パスをDBに保存）
 export async function createWishItem(
   userId: string,
