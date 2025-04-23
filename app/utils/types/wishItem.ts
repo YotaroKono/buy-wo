@@ -1,14 +1,17 @@
-export interface WishItem {
+export type WishItem = {
   id: string;
+  user_id: string;
   name: string;
-  description?: string;
-  price?: number;
-  currency?: string;
-  product_url?: string;
-  image_path?: string;
-  priority: "high" | "medium" | "low";
-  status: "pending" | "purchased" | "cancelled";
+  description: string | null;
+  product_url: string | null;
+  image_path: string | null;
+  price: number | null;
+  currency: 'JPY' | 'USD';
+  priority: "high" | "middle" | "low";
+  status: "unpurchased" | "purchased"; // 'purchased' または 'unpurchased'
+  purchase_date: string | null;        // 追加
+  purchase_price: number | null;       // 追加
+  purchase_location: string | null;    // 追加
   created_at: string;
   updated_at: string;
-  user_id: string;
-}
+};
