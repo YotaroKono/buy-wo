@@ -142,6 +142,18 @@ export default function WishItemList({ items }: WishItemListProps) {
 }
 ```
 
+## 注意事項
+### 認証システムの仕組み
+
+1. フロントエンドからのリクエスト時にカスタム JWT トークンが Supabase に送信されます
+2. Supabase はトークンを検証し、`request.jwt.claims` に格納します
+3. `auth.user_id()` 関数がこの値を取得してユーザー ID として利用します
+4. RLS ポリシーがこの関数を使用してアクセス制御を行います
+
+### よくある問題と解決策
+
+- RLS ポリシーが機能しない場合は、`auth.uid()` を `auth.user_id()` に置き換えているか確認してください
+
 ## 開発フロー
 
 1. **models/ にデータアクセス関数を追加**
