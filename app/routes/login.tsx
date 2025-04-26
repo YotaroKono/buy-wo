@@ -35,6 +35,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center">
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-10">
       <AnimatedCard />
       <Modal
         isOpen={showLoginFailedDialog}
@@ -43,6 +44,7 @@ export default function Login() {
       >
         <p>ログインに失敗しました。しばらくしてから、もう一度お試しください。</p>
       </Modal>
+      </div>
     </div>
   );
 }
