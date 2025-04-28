@@ -4,6 +4,7 @@ import WishItemList from "~/components/feature/wishItem/wishItemList";
 import { requireUser, createSupabaseToken } from "~/models/auth.server";
 import { getWishItems } from "~/models/wishItem.server";
 import type { WishItem } from "~/utils/types/wishItem";
+import { sortWishItems } from "~/utils/wishItemSorter";
 
 // ローダーの返り値の型を定義
 type LoaderData =
@@ -14,7 +15,9 @@ export const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderDat
   try {
     const user = await requireUser(request);
     const supabaseToken = createSupabaseToken(user.userId);
-    const wishItems = await getWishItems(user.userId, supabaseToken) as WishItem[];
+    let wishItems = await getWishItems(user.userId, supabaseToken) as WishItem[];
+    wishItems = sortWishItems(wishItems);
+
     return { success: true, wishItems: wishItems };
   } catch (error) {
     console.error(error);

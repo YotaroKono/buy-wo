@@ -86,10 +86,6 @@ export async function getWishItems(
     query = query.eq("priority", priority);
   }
 
-  if (sortBy) {
-    query = query.order(sortBy, { ascending: sortOrder === "asc" });
-  }
-
   const { data, error } = await query;
 
   if (error) {
