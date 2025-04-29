@@ -26,16 +26,19 @@ export default function WishItemList({ wishItems, title = "買いたいものリ
             value={sortOrder || ""}
             className="select select-bordered select-sm w-full max-w-xs"
           >
-            <option value="priority">優先度</option>
             <option value="createdAt_desc">作成日時 (新しい順)</option>
             <option value="createdAt_asc">作成日時 (古い順)</option>
             <option value="price_asc">金額 (安い順)</option>
             <option value="price_desc">金額 (高い順)</option>
+            <option value="priority">優先度</option>
           </select>
           <Link to="/items/new" className="btn btn-primary">
             新しいアイテムを追加
           </Link>
         </div>
+      </div>
+      <div className ="overflow-x-auto">
+
       </div>
 
       {wishItems.length === 0 ? (
