@@ -1,4 +1,4 @@
-import { LoaderFunctionArgs } from "@remix-run/node";
+import { LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link, useNavigate } from "@remix-run/react";
 import WishItemList from "~/components/feature/wishItem/wishItemList";
 import { requireUser, createSupabaseToken } from "~/models/auth.server";
@@ -6,28 +6,41 @@ import { getWishItems } from "~/models/wishItem.server";
 import type { WishItem } from "~/utils/types/wishItem";
 import { sortWishItems } from "~/utils/wishItemSorter";
 
-// ローダーの返り値の型を定義
+// ソート順の型定義
+type SortOrder = 'newest' | 'oldest' | 'price_asc' | 'price_desc';
+
+// ローダーとアクションの返り値の型を定義
 type LoaderData =
-  | { success: true; wishItems: WishItem[]; error?: never }
+  | { success: true; wishItems: WishItem[]; error?: never; sortOrder: SortOrder }
   | { success: false; error: string; wishItems?: never };
 
-export const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
-  try {
-    const user = await requireUser(request);
-    const supabaseToken = createSupabaseToken(user.userId);
-    let wishItems = await getWishItems(user.userId, supabaseToken) as WishItem[];
-    wishItems = sortWishItems(wishItems);
-
-    return { success: true, wishItems: wishItems };
-  } catch (error) {
-    console.error(error);
-    return { success: false, error: "Failed to fetch wish items" };
-  }
-};
+  export const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
+    try {
+      const user = await requireUser(request);
+      const supabaseToken = createSupabaseToken(user.userId);
+  
+      // クエリパラメータからソート順を取得
+      const url = new URL(request.url);
+      const sortBy = url.searchParams.get('sort') || 'createdAt_desc'; // デフォルトは新しい順
+  
+      let wishItems = await getWishItems(user.userId, supabaseToken) as WishItem[];
+  
+      // ソート
+      wishItems = sortWishItems(wishItems, sortBy);
+  
+      return { success: true, wishItems: wishItems, sortOrder: sortBy as SortOrder };
+    } catch (error) {
+      console.error(error);
+      return { success: false, error: "Failed to fetch wish items" };
+    }
+  };
 
 export default function WishItemsIndex() {
   const data = useLoaderData<typeof loader>();
   const navigate = useNavigate();
+  const handleSortChange = (sortBy: string) => {
+    navigate(`/items?sort=${sortBy}`);
+  };
 
   // 優先度に応じた色クラスを返す関数
   const getPriorityClass = (priority: string) => {
@@ -99,7 +112,11 @@ export default function WishItemsIndex() {
   // 成功時の表示
   return (
     <div className="container mx-auto py-8 px-4">
-      <WishItemList wishItems={data.wishItems} />
+      <WishItemList 
+        wishItems={data.wishItems} 
+        sortOrder={data.sortOrder}
+        onSortChange={handleSortChange} 
+      />
     </div>
-  );;
+  );
 }
