@@ -7,7 +7,7 @@ import type { WishItem } from "~/utils/types/wishItem";
 import { sortWishItems } from "~/utils/wishItemSorter";
 
 // ソート順の型定義
-type SortOrder = 'newest' | 'oldest' | 'price_asc' | 'price_desc';
+type SortOrder = 'newest' | 'oldest' | 'price_asc' | 'price_desc' | 'price_asc';
 
 // ローダーとアクションの返り値の型を定義
 type LoaderData =

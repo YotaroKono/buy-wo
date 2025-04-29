@@ -29,6 +29,8 @@ export default function WishItemList({ wishItems, title = "買いたいものリ
             <option value="priority">優先度</option>
             <option value="createdAt_desc">作成日時 (新しい順)</option>
             <option value="createdAt_asc">作成日時 (古い順)</option>
+            <option value="price_asc">金額 (安い順)</option>
+            <option value="price_desc">金額 (高い順)</option>
           </select>
           <Link to="/items/new" className="btn btn-primary">
             新しいアイテムを追加
