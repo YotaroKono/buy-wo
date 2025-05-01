@@ -56,7 +56,7 @@
 ```
 - id (PK): UUID NOT NULL
 - user_id: UUID (FK → users.id) NOT NULL
-- user_category_id: UUID (FK → user_categories.id) NULL  // 新規追加
+- user_category_id: UUID (FK → user_category.id) NULL  // 新規追加 NULLのものはUI上未分類として表示する。
 - name: VARCHAR(100) NOT NULL
 - description: TEXT NULL
 - product_url: VARCHAR(255) NULL
@@ -94,7 +94,7 @@
 ```
 - id (PK): UUID NOT NULL
 - user_id: UUID (FK → users.id) NOT NULL
-- system_category_id: UUID (FK → system_categories.id) NULL
+- system_category_id: UUID (FK → system_categories.id) NULL // これがnullの場合、ユーザーのカスタムカテゴリとして認識される
 - name: VARCHAR(50) NOT NULL
 - description: TEXT NULL
 - created_at: TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
