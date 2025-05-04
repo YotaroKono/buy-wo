@@ -14,4 +14,7 @@ export type WishItem = {
   purchase_location: string | null;    // 追加
   created_at: string;
   updated_at: string;
+  user_category_id: string | null;
+  categoryName: string | null;
+  categoryId: string | null;
 };

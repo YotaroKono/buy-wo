@@ -5,6 +5,8 @@ import { formatPrice, getPriorityClass, getPriorityLabel, getStatusLabel } from 
 
 interface WishItemCardProps {
   item: WishItem;
+  supabaseToken: string | null;
+  categoryName: string | null;
 }
 
 export default function WishItemCard({ item }: WishItemCardProps) {
@@ -57,6 +59,12 @@ export default function WishItemCard({ item }: WishItemCardProps) {
         
         {item.price && (
           <p className="font-semibold text-lg">{formatPrice(item.price, item.currency)}</p>
+        )}
+
+        {item.user_category_id !== null ? (
+          <p>カテゴリ: {item.categoryName}</p>
+        ) : (
+          <p>カテゴリ: 未分類</p>
         )}
         
         <div className="card-actions justify-end mt-4">

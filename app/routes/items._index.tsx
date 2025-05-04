@@ -1,8 +1,8 @@
 import { LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link, useNavigate } from "@remix-run/react";
-import WishItemList from "~/components/feature/wishItem/wishItemList";
+import { WishItemList } from "~/components/feature/wishItem/wishItemList";
 import { requireUser, createSupabaseToken } from "~/models/auth.server";
-import { getWishItems } from "~/models/wishItem.server";
+import { getWishItems, getCategoryName } from "~/models/wishItem.server";
 import type { WishItem } from "~/utils/types/wishItem";
 import { sortWishItems } from "~/utils/wishItemSorter";
 
@@ -11,29 +11,51 @@ type SortOrder = 'newest' | 'oldest' | 'price_asc' | 'price_desc' | 'price_asc';
 
 // ローダーとアクションの返り値の型を定義
 type LoaderData =
-  | { success: true; wishItems: WishItem[]; error?: never; sortOrder: SortOrder }
-  | { success: false; error: string; wishItems?: never };
+  | { success: true; wishItems: WishItem[]; error?: never; sortOrder: SortOrder; supabaseToken: string }
+  | { success: false; error: string; wishItems?: never;  categoryNameMapping?: {[key: string]: string | null} };
 
-  export const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
-    try {
-      const user = await requireUser(request);
-      const supabaseToken = createSupabaseToken(user.userId);
-  
-      // クエリパラメータからソート順を取得
-      const url = new URL(request.url);
-      const sortBy = url.searchParams.get('sort') || 'createdAt_desc'; // デフォルトは新しい順
-  
-      let wishItems = await getWishItems(user.userId, supabaseToken) as WishItem[];
-  
-      // ソート
-      wishItems = sortWishItems(wishItems, sortBy);
-  
-      return { success: true, wishItems: wishItems, sortOrder: sortBy as SortOrder };
-    } catch (error) {
-      console.error(error);
-      return { success: false, error: "Failed to fetch wish items" };
-    }
-  };
+export const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
+  try {
+    const user = await requireUser(request);
+    const supabaseToken = createSupabaseToken(user.userId);
+
+    // クエリパラメータからソート順を取得
+    const url = new URL(request.url);
+    const sortBy = url.searchParams.get('sort') || 'createdAt_desc'; // デフォルトは新しい順
+
+    let wishItems = await getWishItems(user.userId, supabaseToken) as WishItem[];
+    
+    // カテゴリー名を取得
+    const categoryNames = await Promise.all(
+      wishItems.map(async (item) => {
+        const categoryName = await getCategoryName(item.user_category_id, supabaseToken);
+        return { itemId: item.id, categoryName };
+      })
+    );
+
+    const categoryNameMapping: { [key: string]: string | null } = categoryNames.reduce(
+      (acc: { [key: string]: string | null }, { itemId, categoryName }) => {
+        acc[itemId] = categoryName;
+        return acc;
+      },
+      {}
+    );
+
+    // ソート
+    wishItems = sortWishItems(wishItems, sortBy);
+
+    return {
+      success: true,
+      wishItems: wishItems,
+      sortOrder: sortBy as SortOrder,
+      supabaseToken: supabaseToken,
+      categoryNameMapping: categoryNameMapping,
+    };
+  } catch (error) {
+    console.error(error);
+    return { success: false, error: "Failed to fetch wish items" };
+  }
+};
 
 export default function WishItemsIndex() {
   const data = useLoaderData<typeof loader>();
@@ -108,14 +130,17 @@ export default function WishItemsIndex() {
       </>
     );
   }
-
   // 成功時の表示
+  const supabaseToken = data.supabaseToken;
+  const categoryNameMapping = data.categoryNameMapping;
   return (
     <div className="container mx-auto py-8 px-4">
-      <WishItemList 
-        wishItems={data.wishItems} 
+      <WishItemList
+        wishItems={data.wishItems}
         sortOrder={data.sortOrder}
-        onSortChange={handleSortChange} 
+        onSortChange={handleSortChange}
+        supabaseToken={supabaseToken}
+        categoryNameMapping={categoryNameMapping}
       />
     </div>
   );

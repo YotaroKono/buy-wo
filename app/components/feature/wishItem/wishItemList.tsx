@@ -1,4 +1,5 @@
 import { Link } from "@remix-run/react";
+import { useState, useEffect } from "react";
 import type { WishItem } from "~/utils/types/wishItem";
 import WishItemCard from "./wishItemCard";
 
@@ -7,9 +8,11 @@ interface WishItemListProps {
   title?: string;
   onSortChange?: (sortBy: string) => void;
   sortOrder?: 'newest' | 'oldest' | 'price_asc' | 'price_desc';
+  supabaseToken: string;
+  categoryNameMapping?: { [key: string]: string | null };
 }
 
-export default function WishItemList({ wishItems, title = "買いたいものリスト", onSortChange, sortOrder }: WishItemListProps) {
+export default function WishItemList({ wishItems, title = "買いたいものリスト", onSortChange, sortOrder, supabaseToken, categoryNameMapping }: WishItemListProps) {
   const handleSortChange = (value: string) => {
     if (onSortChange) {
       onSortChange(value);
@@ -21,7 +24,7 @@ export default function WishItemList({ wishItems, title = "買いたいものリ
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">{title}</h1>
         <div className="flex items-center space-x-2">
-        <select
+          <select
             onChange={(e) => handleSortChange(e.target.value)}
             value={sortOrder || ""}
             className="select select-bordered select-sm w-full max-w-xs"
@@ -37,8 +40,7 @@ export default function WishItemList({ wishItems, title = "買いたいものリ
           </Link>
         </div>
       </div>
-      <div className ="overflow-x-auto">
-
+      <div className="overflow-x-auto">
       </div>
 
       {wishItems.length === 0 ? (
@@ -50,8 +52,13 @@ export default function WishItemList({ wishItems, title = "買いたいものリ
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {wishItems.map((item) => (
-            <WishItemCard key={item.id} item={item} />
+          {wishItems.map(item => (
+            <WishItemCard
+              key={item.id}
+              item={item}
+              categoryName={categoryNameMapping?.[item.id] || null}
+              supabaseToken={supabaseToken}
+            />
           ))}
         </div>
       )}

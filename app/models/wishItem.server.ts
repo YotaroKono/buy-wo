@@ -3,6 +3,34 @@ import { v4 as uuidv4 } from 'uuid';
 import { getSignedUrl } from "../utils/supabase/SignedUrlCache.ts";
 import { WishItem } from "~/utils/types/wishItem";
 
+// user_categoryテーブルからカテゴリ名を取得する関数を追加
+export async function getCategoryName(
+  categoryId: string | null | undefined,
+  supabaseToken: string
+): Promise<string | null> {
+  if (!categoryId) {
+    return "未分類";
+  }
+
+  const supabase = getSupabaseClient(supabaseToken);
+  if (!supabase) {
+    throw new Error("Supabase clientの生成に失敗しました");
+  }
+
+  const { data, error } = await supabase
+    .from("user_category")
+    .select("name")
+    .eq("id", categoryId)
+    .single();
+
+  if (error) {
+    console.error("Error fetching user category:", error);
+    return null;
+  }
+
+  return data?.name || null;
+}
+
 // アイテムの購入状態をトグルする関数
 export async function toggleItemPurchaseStatus(
   itemId: string,
