@@ -1,6 +1,6 @@
 import { LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link, useNavigate } from "@remix-run/react";
-import { WishItemList } from "~/components/feature/wishItem/wishItemList";
+import WishItemList from "~/components/feature/wishItem/wishItemList";
 import { requireUser, createSupabaseToken } from "~/models/auth.server";
 import { getWishItems, getCategoryName } from "~/models/wishItem.server";
 import type { WishItem } from "~/utils/types/wishItem";
