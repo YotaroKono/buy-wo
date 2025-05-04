@@ -89,16 +89,17 @@ REQUIREMENTS.md
 
 #### 2. `wish_item` テーブル
 ```
-- id (PK): UUID
+- id (PK): UUID NOT NULL
 - user_id: UUID (FK → users.id) NOT NULL
+- user_category_id: UUID (FK → user_category.id) NULL  // 新規追加 NULLのものはUI上未分類として表示する。
 - name: VARCHAR(100) NOT NULL
 - description: TEXT NULL
 - product_url: VARCHAR(255) NULL
-- image_path VARCHAR(255) NULL,
+- image_path VARCHAR(255) NULL
 - price: DECIMAL(10,2) NULL 
 - currency: ENUM('JPY', 'USD') NOT NULL DEFAULT 'JPY'
-- priority: ENUM('high', 'middle', 'low') NOT NULL DEFAULT 'middle' //  未設定
-- status: ENUM('unpurchased', 'purchased') NOT NULL DEFAULT 'unpurchased'　//  未設定
+- priority: ENUM('high', 'middle', 'low') NOT NULL DEFAULT 'middle'
+- status: ENUM('unpurchased', 'purchased') NOT NULL DEFAULT 'unpurchased'
 - purchase_date: DATE NULL
 - purchase_price: DECIMAL(10,2) NULL
 - purchase_location: VARCHAR(100) NULL
@@ -113,6 +114,26 @@ REQUIREMENTS.md
 - old_priority: ENUM('high', 'middle', 'low') NOT NULL
 - new_priority: ENUM('high', 'middle', 'low') NOT NULL
 - changed_at: TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+```
+#### 4. `system_category` テーブル (新規) - アプリ全体で1つ
+```
+- id (PK): UUID NOT NULL
+- name: VARCHAR(50) NOT NULL UNIQUE
+- description: TEXT NULL
+- created_at: TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+- updated_at: TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+```
+
+#### 5. `user_category` テーブル (新規) - ユーザーごとに作成
+```
+- id (PK): UUID NOT NULL
+- user_id: UUID (FK → users.id) NOT NULL
+- system_category_id: UUID (FK → system_category.id) NULL // これがnullの場合、ユーザーのカスタムカテゴリとして認識される
+- name: VARCHAR(50) NOT NULL
+- description: TEXT NULL
+- created_at: TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+- updated_at: TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+- UNIQUE(user_id, name)
 ```
 
 # API設計（Remix + Supabase）
@@ -215,3 +236,10 @@ Supabaseの認証機能を使用
 ### エラーハンドリング
 - Remixのエラーバウンダリを活用
 - 一貫したエラーレスポンス形式の提供
+
+
+
+# 追加したい機能
+1. 気になるオンラインサイトを登録できる
+2. 気になる店舗を地図上で、画像と共に確認できる
+3. 周りの友人が今何を欲しがっているのか知ることができる

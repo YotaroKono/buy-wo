@@ -37,70 +37,7 @@
 
 **重要ポイント**: `system_categories`テーブルはアプリ全体で1つのテーブルであり、ユーザー数に関わらず各カテゴリは1レコードのみ存在します。一方、`user_categories`テーブルはユーザーごとに増えていきます。
 
-## 修正後のデータベース設計
 
-### テーブル構造
-
-#### 1. `users` テーブル (変更なし)
-```
-- id (PK): UUID NOT NULL
-- auth_id: VARCHAR(50) NOT NULL UNIQUE  // Supabaseの認証ユーザーID
-- name: VARCHAR(100) NOT NULL
-- email: VARCHAR(100) NOT NULL UNIQUE
-- picture_url: VARCHAR(255) NULL
-- created_at: TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-- updated_at: TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-```
-
-#### 2. `wish_item` テーブル (カテゴリIDカラム追加)
-```
-- id (PK): UUID NOT NULL
-- user_id: UUID (FK → users.id) NOT NULL
-- user_category_id: UUID (FK → user_category.id) NULL  // 新規追加 NULLのものはUI上未分類として表示する。
-- name: VARCHAR(100) NOT NULL
-- description: TEXT NULL
-- product_url: VARCHAR(255) NULL
-- image_path VARCHAR(255) NULL
-- price: DECIMAL(10,2) NULL 
-- currency: ENUM('JPY', 'USD') NOT NULL DEFAULT 'JPY'
-- priority: ENUM('high', 'middle', 'low') NOT NULL DEFAULT 'middle'
-- status: ENUM('unpurchased', 'purchased') NOT NULL DEFAULT 'unpurchased'
-- purchase_date: DATE NULL
-- purchase_price: DECIMAL(10,2) NULL
-- purchase_location: VARCHAR(100) NULL
-- created_at: TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-- updated_at: TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-```
-
-#### 3. `priority_history` テーブル (変更なし)
-```
-- id (PK): UUID NOT NULL
-- wish_item_id: UUID NOT NULL (FK → wish_items.id)
-- old_priority: ENUM('high', 'middle', 'low') NOT NULL
-- new_priority: ENUM('high', 'middle', 'low') NOT NULL
-- changed_at: TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-```
-
-#### 4. `system_categories` テーブル (新規) - アプリ全体で1つ
-```
-- id (PK): UUID NOT NULL
-- name: VARCHAR(50) NOT NULL UNIQUE
-- description: TEXT NULL
-- created_at: TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-- updated_at: TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-```
-
-#### 5. `user_categories` テーブル (新規) - ユーザーごとに作成
-```
-- id (PK): UUID NOT NULL
-- user_id: UUID (FK → users.id) NOT NULL
-- system_category_id: UUID (FK → system_categories.id) NULL // これがnullの場合、ユーザーのカスタムカテゴリとして認識される
-- name: VARCHAR(50) NOT NULL
-- description: TEXT NULL
-- created_at: TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-- updated_at: TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-- UNIQUE(user_id, name)
-```
 
 ## データの関係
 
@@ -131,3 +68,29 @@
 2. **メンテナンス性**: システムカテゴリの追加・変更は中央で1回だけ行えば良い
 3. **カスタマイズ性**: ユーザーは自分だけのカスタマイズが可能
 4. **拡張性**: 将来的なカテゴリ機能の拡張も容易
+
+### システムカテゴリのリスト
+
+1. **name**: 家電
+   **description**: 電子機器や最新デジタル機器
+
+2. **name**: 衣類
+   **description**: 衣服や靴・アクセサリー
+
+3. **name**: 書籍
+   **description**: 本や学習のための教材
+
+4. **name**: 家具
+   **description**: 家具や室内装飾品
+
+5. **name**: 生活用品
+   **description**: 日常生活に必要な実用品
+
+6. **name**: 健康
+   **description**: 健康や運動関連アイテム
+
+7. **name**: エンタメ  
+   **description**: 娯楽や趣味活動用品
+
+8. **name**: コスメ  
+   **description**: 美容ケア・メイク用品
