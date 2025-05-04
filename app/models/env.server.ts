@@ -3,6 +3,7 @@ import "dotenv/config";
 import * as z from "zod";
 
 const envSchema = z.object({
+	SESSION_SECRET: z.string().min(1),
 	AUTH0_CALLBACK_URL: z.string().min(1),
 	AUTH0_CLIENT_ID: z.string().min(1),
 	AUTH0_CLIENT_SECRET: z.string().min(1),
