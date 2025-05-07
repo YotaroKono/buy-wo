@@ -7,4 +7,4 @@ export type User = {
 	userId: string;
 	name?: string;
 	picture_url?: string;
-  }
+};

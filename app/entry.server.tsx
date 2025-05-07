@@ -24,7 +24,11 @@ export default function handleRequest(
 		let shellRendered = false;
 		let currentStatusCode = responseStatusCode;
 		const { pipe, abort } = renderToPipeableStream(
-			<RemixServer context={remixContext} url={request.url} abortDelay={ABORT_DELAY} />,
+			<RemixServer
+				context={remixContext}
+				url={request.url}
+				abortDelay={ABORT_DELAY}
+			/>,
 			{
 				onShellReady() {
 					shellRendered = true;

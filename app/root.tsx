@@ -1,9 +1,16 @@
 import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
-import { Links, Meta, Outlet, Scripts, ScrollRestoration, useLoaderData } from "@remix-run/react";
+import {
+	Links,
+	Meta,
+	Outlet,
+	Scripts,
+	ScrollRestoration,
+	useLoaderData,
+} from "@remix-run/react";
 
 import { AppLayout } from "./components/AppLayout";
-import styles from "./tailwind.css?url";
 import { checkAuthStatus } from "./models/auth.server";
+import styles from "./tailwind.css?url";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
 	const authStatus = await checkAuthStatus(request);

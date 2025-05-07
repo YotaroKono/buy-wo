@@ -1,4 +1,8 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
+import type {
+	ActionFunctionArgs,
+	LoaderFunctionArgs,
+	MetaFunction,
+} from "@remix-run/node";
 import { redirect, useSearchParams } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import Modal from "~/components/ErrorModal";
@@ -15,7 +19,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 		return null;
 	}
 	redirect("/dashboard");
-}
+};
 
 export const action = ({ request }: ActionFunctionArgs) => {
 	console.log("request", request);
@@ -25,13 +29,13 @@ export const action = ({ request }: ActionFunctionArgs) => {
 export default function Index() {
 	const [searchParams] = useSearchParams();
 	const [showLoginFailedDialog, setShowLoginFailedDialog] = useState(false);
-  
+
 	useEffect(() => {
 		if (searchParams.get("loginFailed") === "true") {
 			setShowLoginFailedDialog(true);
 		}
 	}, [searchParams]);
-  
+
 	const closeDialog = () => {
 		setShowLoginFailedDialog(false);
 		const newUrl = new URL(window.location.href);
@@ -47,7 +51,9 @@ export default function Index() {
 				onClose={closeDialog}
 				title="ログイン失敗"
 			>
-				<p>ログインに失敗しました。しばらくしてから、もう一度お試しください。</p>
+				<p>
+					ログインに失敗しました。しばらくしてから、もう一度お試しください。
+				</p>
 			</Modal>
 		</div>
 	);

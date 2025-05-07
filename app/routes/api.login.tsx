@@ -4,5 +4,5 @@ import { authenticator } from "~/models/auth.server";
 export const loader = () => redirect("/login");
 
 export const action = ({ request }: ActionFunctionArgs) => {
-  return authenticator.authenticate("auth0", request);
+	return authenticator.authenticate("auth0", request);
 };
