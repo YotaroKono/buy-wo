@@ -421,12 +421,12 @@ export default function NewItem() {
 									<option value="" disabled selected>
 										選択してください
 									</option>
-									<option value="">未分類</option>
 									{categories.map((category) => (
 										<option key={category.id} value={category.id}>
 											{category.name}
 										</option>
 									))}
+									<option value="">未分類</option>
 								</select>
 							</div>
 
