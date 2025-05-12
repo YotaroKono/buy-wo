@@ -65,9 +65,7 @@ export const action = async ({ request }: { request: Request }) => {
 			purchase_date: null,
 			purchase_price: null,
 			purchase_location: null,
-			categoryName: null,
 			user_category_id: null,
-			categoryId: null,
 		});
 
 		// 成功の場合、ページ遷移はクライアントサイドで行うため、成功フラグのみ返す

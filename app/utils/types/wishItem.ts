@@ -15,6 +15,4 @@ export type WishItem = {
 	created_at: string;
 	updated_at: string;
 	user_category_id: string | null;
-	categoryName: string | null;
-	categoryId: string | null;
 };

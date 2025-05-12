@@ -140,7 +140,6 @@ export async function getWishItems(
 
 	return itemsWithUrls;
 }
-// アップロード処理（パスをDBに保存）
 export async function createWishItem(
 	userId: string,
 	supabaseToken: string,
