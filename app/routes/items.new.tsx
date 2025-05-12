@@ -1,8 +1,28 @@
-import { Form, useActionData, useNavigation } from "@remix-run/react";
+import { json } from "@remix-run/node";
+import {
+	Form,
+	useActionData,
+	useLoaderData,
+	useNavigation,
+} from "@remix-run/react";
 import { useEffect, useRef, useState } from "react";
 import Modal from "~/components/ErrorModal"; // モーダルコンポーネントをインポート
 import { createSupabaseToken, requireUser } from "~/models/auth.server";
+import { getUserCategories } from "~/models/category.server";
 import { createWishItem } from "~/models/wishItem.server";
+import type { UserCategory } from "~/utils/types/category";
+
+export const loader = async ({ request }: { request: Request }) => {
+	try {
+		const user = await requireUser(request);
+		const supabaseToken = createSupabaseToken(user.userId);
+		const categories = await getUserCategories(user.userId, supabaseToken);
+		return json({ categories });
+	} catch (error) {
+		console.error("カテゴリの取得に失敗しました", error);
+		return json({ categories: [] }); // エラーが発生した場合は空の配列を返す
+	}
+};
 
 export const action = async ({ request }: { request: Request }) => {
 	const formData = await request.formData();
@@ -13,6 +33,7 @@ export const action = async ({ request }: { request: Request }) => {
 	const price = formData.get("price") as string | null;
 	const currency = formData.get("currency") as string | null;
 	const priority = formData.get("priority") as "high" | "middle" | "low" | null;
+	const user_category_id = formData.get("user_category_id") as string | null;
 
 	if (!name || !priority || !currency) {
 		return {
@@ -65,7 +86,7 @@ export const action = async ({ request }: { request: Request }) => {
 			purchase_date: null,
 			purchase_price: null,
 			purchase_location: null,
-			user_category_id: null,
+			user_category_id: user_category_id || null,
 		});
 
 		// 成功の場合、ページ遷移はクライアントサイドで行うため、成功フラグのみ返す
@@ -83,6 +104,7 @@ export default function NewItem() {
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const [showSuccessModal, setShowSuccessModal] = useState(false);
 	const [showErrorModal, setShowErrorModal] = useState(false);
+	const { categories } = useLoaderData<{ categories: UserCategory[] }>();
 
 	const isSubmitting = navigation.state === "submitting";
 
@@ -351,40 +373,59 @@ export default function NewItem() {
 								</div>
 							</div>
 
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-								<div className="form-control">
-									<label className="label" htmlFor="price">
-										<span className="label-text font-medium">価格</span>
-									</label>
-									<input
-										type="number"
-										id="price"
-										name="price"
-										step="0.01"
-										min="0"
-										placeholder="0.00"
-										className="input input-bordered w-full"
-									/>
-								</div>
+							<div className="form-control">
+								<label className="label" htmlFor="price">
+									<span className="label-text font-medium">価格</span>
+								</label>
+								<input
+									type="number"
+									id="price"
+									name="price"
+									step="0.01"
+									min="0"
+									placeholder="0.00"
+									className="input input-bordered w-full"
+								/>
+							</div>
 
-								<div className="form-control">
-									<label className="label" htmlFor="currency">
-										<span className="label-text font-medium">通貨</span>
-										<span className="label-text-alt text-error">必須</span>
-									</label>
-									<select
-										id="currency"
-										name="currency"
-										required
-										className="select select-bordered w-full"
-									>
-										<option value="" disabled selected>
-											選択してください
+							<div className="form-control">
+								<label className="label" htmlFor="currency">
+									<span className="label-text font-medium">通貨</span>
+									<span className="label-text-alt text-error">必須</span>
+								</label>
+								<select
+									id="currency"
+									name="currency"
+									required
+									className="select select-bordered w-full"
+								>
+									<option value="" disabled selected>
+										選択してください
+									</option>
+									<option value="JPY">JPY (日本円)</option>
+									<option value="USD">USD (米ドル)</option>
+								</select>
+							</div>
+
+							{/* カテゴリ選択 */}
+							<div className="form-control">
+								<label className="label" htmlFor="user_category_id">
+									<span className="label-text font-medium">カテゴリ</span>
+								</label>
+								<select
+									id="user_category_id"
+									name="user_category_id"
+									className="select select-bordered w-full"
+								>
+									<option value="" disabled selected>
+										選択してください
+									</option>
+									{categories.map((category) => (
+										<option key={category.id} value={category.id}>
+											{category.name}
 										</option>
-										<option value="JPY">JPY (日本円)</option>
-										<option value="USD">USD (米ドル)</option>
-									</select>
-								</div>
+									))}
+								</select>
 							</div>
 
 							<div className="form-control">

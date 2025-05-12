@@ -171,3 +171,28 @@ export async function setupUserCategories(
 		throw error;
 	}
 }
+
+/**
+ * ユーザーのカテゴリを取得する
+ */
+export async function getUserCategories(
+	userId: string,
+	token: string,
+): Promise<UserCategory[]> {
+	const supabase = getSupabaseClient(token);
+	if (!supabase) {
+		throw new Error("Supabase clientの生成に失敗しました");
+	}
+
+	const { data, error } = await supabase
+		.from("user_category")
+		.select("*")
+		.eq("user_id", userId);
+
+	if (error) {
+		console.error("Error fetching user categories:", error);
+		throw error;
+	}
+
+	return data as UserCategory[];
+}
