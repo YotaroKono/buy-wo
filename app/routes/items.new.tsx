@@ -86,7 +86,8 @@ export const action = async ({ request }: { request: Request }) => {
 			purchase_date: null,
 			purchase_price: null,
 			purchase_location: null,
-			user_category_id: user_category_id || null,
+			user_category_id:
+				user_category_id === "" ? null : user_category_id || null,
 		});
 
 		// 成功の場合、ページ遷移はクライアントサイドで行うため、成功フラグのみ返す
@@ -420,6 +421,7 @@ export default function NewItem() {
 									<option value="" disabled selected>
 										選択してください
 									</option>
+									<option value="">未分類</option>
 									{categories.map((category) => (
 										<option key={category.id} value={category.id}>
 											{category.name}
