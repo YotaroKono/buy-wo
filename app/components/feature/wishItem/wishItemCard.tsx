@@ -70,12 +70,6 @@ export default function WishItemCard({ item }: WishItemCardProps) {
 					</p>
 				)}
 
-				{item.user_category_id !== null ? (
-					<p>カテゴリ: {item.categoryName}</p>
-				) : (
-					<p>カテゴリ: 未分類</p>
-				)}
-
 				<div className="card-actions justify-end mt-4">
 					<Link to={`/items/${item.id}`} className="btn btn-sm btn-outline">
 						詳細
