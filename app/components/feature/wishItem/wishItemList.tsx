@@ -1,5 +1,6 @@
 import { Link } from "@remix-run/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import type { UserCategory } from "~/utils/types/category";
 import type { WishItem } from "~/utils/types/wishItem";
 import WishItemCard from "./wishItemCard";
 
@@ -10,6 +11,8 @@ interface WishItemListProps {
 	sortOrder?: "newest" | "oldest" | "price_asc" | "price_desc";
 	supabaseToken: string;
 	categoryNameMapping?: { [key: string]: string | null };
+	categories: UserCategory[];
+	onCategoryFilterChange?: (categoryId: string | null) => void;
 }
 
 export default function WishItemList({
@@ -19,6 +22,8 @@ export default function WishItemList({
 	sortOrder,
 	supabaseToken,
 	categoryNameMapping,
+	onCategoryFilterChange,
+	categories,
 }: WishItemListProps) {
 	const handleSortChange = (value: string) => {
 		if (onSortChange) {
@@ -31,6 +36,23 @@ export default function WishItemList({
 			<div className="flex justify-between items-center mb-6">
 				<h1 className="text-2xl font-bold">{title}</h1>
 				<div className="flex items-center space-x-2">
+					<select
+						onChange={(e) => {
+							if (onCategoryFilterChange) {
+								onCategoryFilterChange(
+									e.target.value === "" ? null : e.target.value,
+								);
+							}
+						}}
+						className="select select-bordered select-sm w-full max-w-xs"
+					>
+						<option value="">全てのカテゴリ</option>
+						{categories.map((category: UserCategory) => (
+							<option key={category.id} value={category.id}>
+								{category.name}
+							</option>
+						))}
+					</select>
 					<select
 						onChange={(e) => handleSortChange(e.target.value)}
 						value={sortOrder || ""}

@@ -1,8 +1,15 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
-import { Link, useLoaderData, useNavigate } from "@remix-run/react";
+import {
+	Link,
+	useLoaderData,
+	useNavigate,
+	useSearchParams,
+} from "@remix-run/react";
 import WishItemList from "~/components/feature/wishItem/wishItemList";
 import { createSupabaseToken, requireUser } from "~/models/auth.server";
+import { getUserCategories } from "~/models/category.server";
 import { getCategoryName, getWishItems } from "~/models/wishItem.server";
+import type { UserCategory } from "~/utils/types/category";
 import type { WishItem } from "~/utils/types/wishItem";
 import { sortWishItems } from "~/utils/wishItemSorter";
 
@@ -18,12 +25,15 @@ type LoaderData =
 			sortOrder: SortOrder;
 			supabaseToken: string;
 			categoryNameMapping: { [key: string]: string | null };
+			categories: UserCategory[];
+			categoryId: string | null;
 	  }
 	| {
 			success: false;
 			error: string;
 			wishItems?: never;
 			categoryNameMapping?: { [key: string]: string | null };
+			categoryId?: never;
 	  };
 
 export const loader = async ({
@@ -36,11 +46,19 @@ export const loader = async ({
 		// クエリパラメータからソート順を取得
 		const url = new URL(request.url);
 		const sortBy = url.searchParams.get("sort") || "createdAt_desc"; // デフォルトは新しい順
+		const categoryId = url.searchParams.get("category") || null;
 
 		let wishItems = (await getWishItems(
 			user.userId,
 			supabaseToken,
 		)) as WishItem[];
+
+		// カテゴリーでフィルタリング
+		if (categoryId) {
+			wishItems = wishItems.filter(
+				(item) => item.user_category_id === categoryId,
+			);
+		}
 
 		// カテゴリー名を取得
 		const categoryNames = await Promise.all(
@@ -71,6 +89,8 @@ export const loader = async ({
 			sortOrder: sortBy as SortOrder,
 			supabaseToken: supabaseToken,
 			categoryNameMapping: categoryNameMapping,
+			categories: await getUserCategories(user.userId, supabaseToken),
+			categoryId,
 		};
 	} catch (error) {
 		console.error(error);
@@ -172,6 +192,19 @@ export default function WishItemsIndex() {
 	// 成功時の表示
 	const supabaseToken = data.supabaseToken;
 	const categoryNameMapping = data.categoryNameMapping;
+	const [searchParams, setSearchParams] = useSearchParams();
+	const categoryId = searchParams.get("category") || null;
+
+	const handleCategoryFilterChange = (categoryId: string | null) => {
+		const params = new URLSearchParams(searchParams);
+		if (categoryId) {
+			params.set("category", categoryId);
+		} else {
+			params.delete("category");
+		}
+		setSearchParams(params);
+	};
+
 	return (
 		<div className="container mx-auto py-8 px-4">
 			<WishItemList
@@ -180,6 +213,8 @@ export default function WishItemsIndex() {
 				onSortChange={handleSortChange}
 				supabaseToken={supabaseToken}
 				categoryNameMapping={categoryNameMapping}
+				categories={data.categories}
+				onCategoryFilterChange={handleCategoryFilterChange}
 			/>
 		</div>
 	);
