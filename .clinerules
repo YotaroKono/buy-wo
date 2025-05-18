@@ -95,3 +95,9 @@ export default function WishItemList({ items }: Props) {
 - Routes: loader/actionでModels呼び出し、ComponentsにDATAを渡す
 - Models: Database操作とビジネスロジック（.server.tsファイル）
 - Components: propsを受け取ってUI表示するのみ
+
+// ❌ Biomeエラーが出る
+import { ActionArgs, LoaderArgs } from '@remix-run/node';
+
+// ✅ 修正版
+import type { ActionArgs, LoaderArgs } from '@remix-run/node';
