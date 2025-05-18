@@ -53,11 +53,12 @@ export const loader = async ({
 			supabaseToken,
 		)) as WishItem[];
 
-		// カテゴリーでフィルタリング
 		if (categoryId) {
-			if (categoryId === null) {
+			if (categoryId === "uncategorized") {
+				// 未分類のアイテムをフィルタリング
 				wishItems = wishItems.filter((item) => item.user_category_id === null);
 			} else {
+				// 特定のカテゴリーのアイテムをフィルタリング
 				wishItems = wishItems.filter(
 					(item) => item.user_category_id === categoryId,
 				);

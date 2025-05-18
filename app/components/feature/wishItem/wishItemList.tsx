@@ -47,6 +47,7 @@ export default function WishItemList({
 						className="select select-bordered select-sm w-full max-w-xs"
 					>
 						<option value="">全てのカテゴリ</option>
+						<option value="uncategorized">未分類</option>
 						{categories.map((category: UserCategory) => (
 							<option key={category.id} value={category.id}>
 								{category.name}
