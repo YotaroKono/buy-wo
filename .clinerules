@@ -1,178 +1,97 @@
-# 買いたいものリストアプリ - 開発ガイドライン (.clinerulesファイル)
+# 買いたいものリストアプリ - 開発ルール
 
-## はじめに
-このドキュメントは「買いたいものリスト」アプリを開発する際のガイドラインをまとめたものです。
-このガイドラインに従って、開発作業を進めてください。
-
-## 開発モードについて
-以下の4つのモードを状況に応じて自動的に切り替えながら開発を行ってください。
-
-| モード | 役割 | 自動切替のタイミング |
-|--------|------|------------|
-| PM | 要件定義・計画作成 | 新機能の検討時、段階的実装ロードマップの詳細化が必要な時 |
-| Architect | 設計・技術選定 | DBスキーマ設計、API設計、技術スタック選定時 |
-| Code | 実装・テスト | モデル実装、ルート実装、バリデーション実装時 |
-| PMO | 品質管理・確認 | 機能完了時、コア機能からの段階的移行判断時 |
-
-あなたは作業の内容や流れに応じて最適なモードを自動的に選択し、段階的な実装ロードマップに沿って効率的に作業を進めてください。
-
-## 基本ルール
-
-- 指示に従う:
-   - 要件や指示に従って作業を進める
-   - 作業の進捗や問題が発生した場合は適宜報告
-
-- 自律的な問題解決:
-   - エラーや何かしらの問題が発生したら、自律的に問題分析と解決案を提示
-   - 複数のアプローチがある場合は、推奨案を明示
-   - ソースコード外の問題である可能性がある場合は、指示者に報告
-
-- 既存コードの尊重:
-   - 既存のコードスタイルやパターンがある場合には、それに従う
-   - 大幅な変更が必要な場合は理由を説明
-
-- 連続で修正に失敗した場合:
-   - 作業を必ず止めて、支持者に現状を報告してください
-
-## セキュリティ
-### 機密ファイル
-以下を読み取ったり変更したりすることは絶対に避けてください。
+## 必須セキュリティルール
+以下のファイルは絶対に触らない：
 - `.env` ファイル
 - Supabase関連の認証情報
 - Auth0関連の認証情報
 - JWT関連の鍵やシークレット
 - APIキー、トークン、認証情報を含むファイル全般
 
-何か機密ファイルの編集が必要になった場合は、指示を仰いでください。
+機密ファイルの編集が必要な場合は、必ず指示を仰ぐ。
 
-また、以下のセキュリティガイドラインに従って作業を行ってください。
-- 機密ファイルを絶対にコミットしない
-- 環境変数（dotenv）を活用したシークレット管理
-- ユーザーデータのプライバシーを常に考慮する
-- JSONWebTokenの適切な取り扱い
-
-## 作業プロセス
-以下のプロセスに従って、作業を進めます。
-
-1. 要件理解（PMモード）
-   - 要件の明確化・詳細化
-   - 必要に応じて質問や提案
-
-2. 設計（Architectモード）
-   - 適切なアーキテクチャ・パターンの選択
-   - コンポーネント設計・データフロー設計
-
-3. 実装（Codeモード）
-   - 設計に基づいたコーディング
-   - ユニットテストの作成
-
-4. 品質確認（PMOモード）
-   - コードレビュー
-   - 要件充足の確認
-
-AIはこれらのステップを自動的に判断して進め、1回のリクエストでも可能な限り完結した成果物を提供します。
+## 開発ルール
+- `/domain`以下と`/infrastructure`以下のファイルは無視する
+- 連続で修正に失敗した場合は、作業を止めて現状を報告する
+- エラーが発生した場合は自律的に解決を試み、失敗したら報告する
 
 ## 技術スタック
-プロジェクトで定義された以下の技術スタックに従って開発を行います。
+- TypeScript + Remix v2 + Vite
+- Supabase (PostgreSQL)
+- Auth0 (認証)
+- TailwindCSS + DaisyUI
 
-### フロントエンド
-- 言語: TypeScript
-- フレームワーク: Remix v2 (Vite構成)
-- UI: TailwindCSS + DaisyUI
-- 状態管理: Remix Loader/Action
-- フォームバリデーション: Zod
-
-### バックエンド
-- 言語: TypeScript (Node.js v20+)
-- API: RemixのServer Side関数
-- データベース: PostgreSQL (Supabase)
-- 認証: Remix Auth + Auth0
-- スクレイピング: Cheerio
-
-### 開発ツール
-- リンター: Biome
-- フォーマッター: Biome
-- Git Hooks: Lefthook
-- ビルドツール: Vite
-
-## データベース設計ガイドライン
-- テーブル構造は仕様書のスキーマに基づく
-- 以下の3つの主要テーブルを適切に設計・実装する:
-  - `user` テーブル
-  - `wish_item` テーブル
-- ENUMタイプの適切な使用（優先度、ステータス）
-- 適切な外部キー制約の設定
-- Supabase環境での最適なクエリ設計
-
-## コーディングガイドライン
-### 一般原則
-- Remix v2 + Viteのパターンに沿った実装
-- コンポーネント（components/以下）は直接モデル層（models/以下）にアクセスしてはならない
-- サーバーサイドの処理はルート層（routes/以下）で行う
-- コンポーネントには、ルートのloaderやactionで準備したデータを渡す
-- 非同期処理やデータベース操作は、必ずサーバーサイドで完結させる
-- /domain以下のファイルと/infrastructure以下のファイルは無視してください
-
-
-### フォルダ構造
+## ファイル構成
 ```
 /app
-  /models          # データモデル層（Supabase連携）
+  /models          # データアクセス（*.server.ts）
   /routes          # Remixルート
-  /utils           # ユーティリティ関数
-  /components      # 再利用可能なコンポーネント
-  /styles          # TailwindCSS関連
-  /auth            # 認証関連（Remix Auth + Auth0）
+  /components      # UIコンポーネント
 ```
 
-### ルール
+## コーディング原則と実装例
 
+### データフロー図
+```
+ユーザー → Routes (loader/action) → Models → Database
+         ↘ Components (props経由でデータ渡し)
+```
 
+### 1. データフロー（正しい例）
+```typescript
+// ❌ NG: コンポーネントが直接modelsにアクセス
+export default function WishItemList() {
+  const items = await getWishItems(); // NG!
+}
 
-### コード品質
-- Biomeを使用したlintとformat
-- TypeScriptの型チェック徹底
-- TailwindCSSとDaisyUIによる一貫したUIデザイン
+// ✅ OK: routesのloaderでデータ取得 → componentsにprops渡し
+// app/routes/wish-items/_index.tsx
+export const loader = async ({ request }: LoaderArgs) => {
+  const items = await getWishItems(request); // Models層呼び出し
+  return json({ items });
+};
 
-### コミットメッセージのガイドライン
-簡潔かつ明確なコミットメッセージを記述することで、変更履歴を追いやすくします。
+export default function WishItemsIndex() {
+  const { items } = useLoaderData<typeof loader>();
+  return <WishItemList items={items} />; // propsでデータ渡し
+}
+```
 
-### コミットプレフィックス
-- feat: 新機能追加（例: `feat: 買いたいものの追加機能実装`）
-- fix: バグ修正（例: `fix: 優先度更新時のトランザクション処理修正`）
-- docs: ドキュメント更新（例: `docs: APIドキュメント更新`）
-- style: スタイル調整（例: `style: アイテムリスト表示の改善`）
-- refactor: リファクタリング（例: `refactor: wish-item.server.tsのリファクタリング`）
-- test: テスト追加・修正（例: `test: 優先度履歴のテスト追加`）
-- chore: 雑務的な変更（例: `chore: パッケージ更新`）
+### 2. modelsファイル（Database層との接続）
+```typescript
+// app/models/wishItem.server.ts
+export async function getWishItems(request: Request) {
+  const session = await getSession(request);
+  const { data, error } = await supabase // Database操作
+    .from('wish_items')
+    .select('*')
+    .eq('user_id', session.get('userId'));
+  
+  if (error) throw new Error(error.message);
+  return data;
+}
+```
 
-### コミットの注意事項
-- 1つのコミットでは機能単位の変更のみを含める
-- コア機能と拡張機能の変更は分けてコミットする
-- コミットメッセージは日本語で記述可能
-- Lefthookによるコミット前のコード品質チェックを通過させる
-- 自動テストはないが、動作確認を行ってからコミットする
-- **重要**: コミットを実行する前に必ず開発者の明示的な許可を得ること
-- git add や git commit コマンドは自動実行せず、開発者の指示を待つこと
+### 3. コンポーネント（UI表示のみ）
+```typescript
+// app/components/features/wish-item/WishItemList.tsx
+interface Props {
+  items: WishItem[]; // routesからpropsで受け取る
+}
 
-## 段階的実装のベストプラクティス
-- 各段階で必要最小限の実装に留める
-- 拡張しやすい設計を心がける
-- 直接的な動作確認を通じた品質保証
+export default function WishItemList({ items }: Props) {
+  // DBアクセスなし、UI表示のみ
+  return (
+    <ul>
+      {items.map(item => (
+        <li key={item.id}>{item.name}</li>
+      ))}
+    </ul>
+  );
+}
+```
 
-## 技術固有のガイドライン
-
-### Supabase連携
-- Supabaseクライアントの適切な初期化
-- トランザクションを活用した優先度履歴の記録
-- データ取得クエリの最適化
-
-### 認証関連
-- Remix Auth + Auth0の適切な設定
-- JWTを使用したセッション管理
-- ログイン・ログアウトフローの適切な実装
-
-### UI実装
-- TailwindCSSとDaisyUIを活用した一貫したデザイン
-- レスポンシブデザインの徹底
-- アクセシビリティへの配慮
+### 4. 重要なルール
+- Routes: loader/actionでModels呼び出し、ComponentsにDATAを渡す
+- Models: Database操作とビジネスロジック（.server.tsファイル）
+- Components: propsを受け取ってUI表示するのみ
