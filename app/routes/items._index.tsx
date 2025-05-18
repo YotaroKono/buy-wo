@@ -55,18 +55,32 @@ export const loader = async ({
 
 		// カテゴリーでフィルタリング
 		if (categoryId) {
-			wishItems = wishItems.filter(
-				(item) => item.user_category_id === categoryId,
-			);
+			if (categoryId === null) {
+				wishItems = wishItems.filter((item) => item.user_category_id === null);
+			} else {
+				wishItems = wishItems.filter(
+					(item) => item.user_category_id === categoryId,
+				);
+			}
 		}
 
 		// カテゴリー名を取得
 		const categoryNames = await Promise.all(
 			wishItems.map(async (item) => {
-				const categoryName = await getCategoryName(
-					item.user_category_id,
-					supabaseToken,
-				);
+				let categoryName: string | null;
+				console.log("tttttttttttttttttttttttt");
+				console.log(item.user_category_id);
+				if (item.user_category_id === null) {
+					categoryName = "未分類";
+					console.log("あああああああああ");
+					console.log(item.user_category_id);
+					console.log(categoryName);
+				} else {
+					categoryName = await getCategoryName(
+						item.user_category_id,
+						supabaseToken,
+					);
+				}
 				return { itemId: item.id, categoryName };
 			}),
 		);
@@ -101,8 +115,11 @@ export const loader = async ({
 export default function WishItemsIndex() {
 	const data = useLoaderData<typeof loader>();
 	const navigate = useNavigate();
+	const [searchParams, setSearchParams] = useSearchParams();
 	const handleSortChange = (sortBy: string) => {
-		navigate(`/items?sort=${sortBy}`);
+		const params = new URLSearchParams(searchParams);
+		params.set("sort", sortBy);
+		navigate(`/items?${params.toString()}`);
 	};
 
 	// 優先度に応じた色クラスを返す関数
@@ -192,7 +209,8 @@ export default function WishItemsIndex() {
 	// 成功時の表示
 	const supabaseToken = data.supabaseToken;
 	const categoryNameMapping = data.categoryNameMapping;
-	const [searchParams, setSearchParams] = useSearchParams();
+
+	console.log("categoryNameMapping", categoryNameMapping);
 	const categoryId = searchParams.get("category") || null;
 
 	const handleCategoryFilterChange = (categoryId: string | null) => {
