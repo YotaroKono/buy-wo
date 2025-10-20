@@ -388,7 +388,6 @@ export default function NewItem() {
 									className="input input-bordered w-full"
 								/>
 							</div>
-
 							<div className="form-control">
 								<label className="label" htmlFor="currency">
 									<span className="label-text font-medium">通貨</span>
@@ -399,10 +398,8 @@ export default function NewItem() {
 									name="currency"
 									required
 									className="select select-bordered w-full"
+									defaultValue="JPY" // デフォルト値をJPYに設定
 								>
-									<option value="" disabled selected>
-										選択してください
-									</option>
 									<option value="JPY">JPY (日本円)</option>
 									<option value="USD">USD (米ドル)</option>
 								</select>
