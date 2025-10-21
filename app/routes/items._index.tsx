@@ -69,13 +69,8 @@ export const loader = async ({
 		const categoryNames = await Promise.all(
 			wishItems.map(async (item) => {
 				let categoryName: string | null;
-				console.log("tttttttttttttttttttttttt");
-				console.log(item.user_category_id);
 				if (item.user_category_id === null) {
 					categoryName = "未分類";
-					console.log("あああああああああ");
-					console.log(item.user_category_id);
-					console.log(categoryName);
 				} else {
 					categoryName = await getCategoryName(
 						item.user_category_id,
