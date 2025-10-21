@@ -8,9 +8,8 @@ import { checkAuthStatus } from "~/models/auth.server";
 export const loader = async ({ request }: LoaderFunctionArgs) => {
 	const { isAuthenticated } = await checkAuthStatus(request);
 
-	// 既に認証済みの場合はダッシュボードへリダイレクト
 	if (isAuthenticated) {
-		return redirect("/dashboard");
+		return redirect("/items");
 	}
 
 	return json({});

@@ -4,7 +4,7 @@ import { authenticator } from "~/models/auth.server";
 
 export const loader = ({ request }: LoaderFunctionArgs) => {
 	return authenticator.authenticate("auth0", request, {
-		successRedirect: "/dashboard",
+		successRedirect: "/items",
 		failureRedirect: "/?loginFailed=true",
 	});
 };
