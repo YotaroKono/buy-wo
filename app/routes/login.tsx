@@ -7,6 +7,10 @@ import { checkAuthStatus } from "~/models/auth.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
 	const { isAuthenticated } = await checkAuthStatus(request);
+	console.log(
+		"=======================Login loader - isAuthenticated:",
+		isAuthenticated,
+	);
 
 	if (isAuthenticated) {
 		return redirect("/items");
