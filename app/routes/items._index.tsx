@@ -42,6 +42,7 @@ export const loader = async ({
 	try {
 		const user = await requireUser(request);
 		const supabaseToken = createSupabaseToken(user.userId);
+		console.log("=======================Login loader - user:", user);
 
 		// クエリパラメータからソート順を取得
 		const url = new URL(request.url);
