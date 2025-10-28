@@ -1,5 +1,6 @@
 import { configRouteToBranchRoute } from "@remix-run/dev/dist/vite/plugin";
 import { createCookieSessionStorage, redirect } from "@remix-run/node";
+import { createClient } from "@supabase/supabase-js";
 import jwt from "jsonwebtoken";
 import { Authenticator } from "remix-auth";
 import { Auth0Strategy } from "remix-auth-auth0";
@@ -22,7 +23,8 @@ export const { getSession, commitSession, destroySession } = sessionStorage;
 
 export function createSupabaseToken(userId: string): string {
 	const payload = {
-		userId,
+		role: "authenticated",
+		sub: userId,
 		exp: Math.floor(Date.now() / 1000) + 60 * 60, // 1時間の有効期限
 	};
 	if (!userId) {
@@ -47,6 +49,8 @@ const UserService = {
 		if (!supabase) {
 			throw new Error("Supabase clientの生成に失敗しました");
 		}
+		// 管理者クライアントを使用（新規ユーザー作成用）
+		const supabaseAdmin = await createAdminClient();
 
 		// Supabaseのuserテーブルでユーザーを検索
 		const { data: existingUser, error: searchError } = await supabase
@@ -61,7 +65,7 @@ const UserService = {
 
 		// ユーザーが存在しない場合は新規作成
 		if (!existingUser) {
-			const { data: newUser, error: insertError } = await supabase
+			const { data: newUser, error: insertError } = await supabaseAdmin
 				.from("user")
 				.insert([
 					{
@@ -78,8 +82,12 @@ const UserService = {
 
 			if (insertError) {
 				console.error("Error creating new user:", insertError);
+			} else {
+				console.log("Supabase user created successfully");
 			}
 		}
+
+		console.log("Supabase user setup complete");
 
 		return {
 			userId: data.userId,
@@ -154,6 +162,7 @@ async function refreshAccessToken(refreshToken: string): Promise<{
 export async function getValidAccessToken(request: Request): Promise<string> {
 	const session = await getSession(request.headers.get("Cookie"));
 	const user = session.get("user") as User;
+	console.log("=============================User in session:", user);
 
 	if (!user) {
 		throw redirect("/login");
@@ -182,6 +191,7 @@ export async function getValidAccessToken(request: Request): Promise<string> {
 			},
 		});
 	}
+	console.log("+++++++++++++++++++++++++++++User is authenticated:", user);
 
 	return user.accessToken;
 }
@@ -194,6 +204,8 @@ export async function requireUser(request: Request) {
 	if (!user) {
 		throw redirect("/login");
 	}
+	console.log("=== requireUser - Session ===", session);
+	console.log("============================Authenticated user:", user);
 
 	return user;
 }
@@ -206,4 +218,21 @@ export async function checkAuthStatus(request: Request) {
 		isAuthenticated: !!user,
 		user: user || null,
 	};
+}
+
+export async function createAdminClient() {
+	// 新しい secret key を優先、なければ古い service_role を使用
+	const supabaseUrl = process.env.SUPABASE_URL;
+	const supabaseKey = process.env.SUPABASE_SECRET_KEY;
+
+	if (!supabaseUrl || !supabaseKey) {
+		throw new Error("SUPABASE_URL or SUPABASE_SECRET_KEY is not defined");
+	}
+
+	return createClient(supabaseUrl, supabaseKey, {
+		auth: {
+			autoRefreshToken: false,
+			persistSession: false,
+		},
+	});
 }
