@@ -156,12 +156,26 @@ export async function createWishItem(
 	const newItemId = uuidv4();
 	let imagePath: string | null = wishItem.image_path || null;
 
+	if (supabaseToken) {
+		try {
+			const payload = JSON.parse(atob(supabaseToken.split(".")[1]));
+			console.log("===== JWT PAYLOAD =====");
+			console.log(JSON.stringify(payload, null, 2));
+			console.log("role:", payload.role);
+			console.log("userId:", payload.userId);
+			console.log("=======================");
+		} catch (e) {
+			console.error("Failed to decode JWT:", e);
+		}
+	}
+
 	if (wishItem.image) {
 		const file = wishItem.image;
 		if (!(file instanceof File)) {
 			throw new Error("image must be a File");
 		}
 		const safeUserId = userId.replace(/[|]/g, "-");
+		console.log(safeUserId);
 
 		// 新しく生成したIDをファイル名に使用
 		const fileName = `${safeUserId}/${newItemId}/${Date.now()}`;
