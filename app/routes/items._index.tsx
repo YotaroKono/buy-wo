@@ -7,7 +7,10 @@ import {
 } from "@remix-run/react";
 import WishItemList from "~/components/feature/wishItem/wishItemList";
 import { createSupabaseToken, requireUser } from "~/models/auth.server";
-import { getUserCategories } from "~/models/category.server";
+import {
+	getUserCategories,
+	setupUserCategories,
+} from "~/models/category.server";
 import { getCategoryName, getWishItems } from "~/models/wishItem.server";
 import type { UserCategory } from "~/utils/types/category";
 import type { WishItem } from "~/utils/types/wishItem";
@@ -36,6 +39,8 @@ type LoaderData =
 			categoryId?: never;
 	  };
 
+// ユーザーのsupabaseTokenが存在することを確認
+
 export const loader = async ({
 	request,
 }: LoaderFunctionArgs): Promise<LoaderData> => {
@@ -43,6 +48,12 @@ export const loader = async ({
 		const user = await requireUser(request);
 		const supabaseToken = createSupabaseToken(user.userId);
 		console.log("=======================Login loader - user:", user);
+
+		if (!user.supabaseToken) {
+			throw new Error("認証トークンがありません");
+		}
+		// ユーザーのカテゴリをセットアップ
+		await setupUserCategories(user.userId, user.supabaseToken);
 
 		// クエリパラメータからソート順を取得
 		const url = new URL(request.url);
