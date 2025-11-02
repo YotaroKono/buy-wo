@@ -1,5 +1,4 @@
-import { LoaderFunctionArgs } from "@remix-run/node";
-import { Form, useLoaderData } from "@remix-run/react";
+import { Form, Link } from "@remix-run/react";
 import type { User } from "~/utils/types/user";
 
 type HeaderProps = {
@@ -13,7 +12,9 @@ export const Header = ({ isAuthenticated, user }: HeaderProps) => {
 			<div className="container mx-auto flex justify-between items-center">
 				{/* ロゴ部分 */}
 				<div className="flex items-center">
-					<img src="/public/icon.svg" alt="サイトロゴ" className="w-full" />
+					<Link to="/items">
+						<img src="/icon.svg" alt="サイトロゴ" className="w-full" />
+					</Link>
 				</div>
 				{/* 認証ボタン部分（既存のコード） */}
 				<div>
