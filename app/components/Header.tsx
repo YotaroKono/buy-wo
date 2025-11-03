@@ -19,7 +19,14 @@ export const Header = ({ isAuthenticated, user }: HeaderProps) => {
 				{/* 認証ボタン部分（既存のコード） */}
 				<div>
 					{isAuthenticated ? (
-						<div>会員済み</div>
+						<div className="flex items-center gap-4">
+							<span>会員情報</span>
+							<Form action="/logout" method="post">
+								<button type="submit" className="btn btn-ghost">
+									ログアウト
+								</button>
+							</Form>
+						</div>
 					) : (
 						<Form action="/api/login" method="post">
 							<button type="submit" className="btn btn-accent">
