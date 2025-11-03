@@ -1,3 +1,4 @@
+import { Form } from "@remix-run/react";
 import type { ReactNode } from "react";
 
 interface ModalProps {
@@ -45,10 +46,11 @@ export default function Modal({
 						<div className="py-2">{children}</div>
 						<div className="justify-end card-actions">
 							{actions || (
-								// biome-ignore lint/a11y/useButtonType:
-								<button onClick={onClose} className="btn btn-primary">
-									閉じる
-								</button>
+								<Form action="/logout" method="post">
+									<button type="submit" className="btn btn-primary">
+										もう一度ログインする
+									</button>
+								</Form>
 							)}
 						</div>
 					</div>
