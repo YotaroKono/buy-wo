@@ -1,0 +1,10 @@
+[build]
+  command = "npm run build"
+  publish = "build/client"
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+[[plugins]]
+  package = "@netlify/remix-adapter"
