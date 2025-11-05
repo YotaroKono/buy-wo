@@ -234,11 +234,6 @@ export default function WishItemsIndex() {
 
 	return (
 		<div className="container mx-auto py-8 px-4">
-			<Form action="/logout" method="post">
-				<button type="submit" className="btn btn-primary">
-					もう一度ログインする
-				</button>
-			</Form>
 			<WishItemList
 				wishItems={data.wishItems}
 				sortOrder={data.sortOrder}
