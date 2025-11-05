@@ -30,6 +30,7 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.4",
+		"@netlify/remix-adapter": "^2.6.1",
 		"@remix-run/dev": "^2.15.3",
 		"@types/animejs": "^3.1.13",
 		"@types/jsonwebtoken": "^9.0.9",
