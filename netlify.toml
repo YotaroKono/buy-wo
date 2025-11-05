@@ -6,5 +6,5 @@
 [functions]
   node_bundler = "esbuild"
 
-[[plugins]]
-  package = "@netlify/remix-adapter"
+[build.environment]
+  NODE_VERSION = "20.11.0"
