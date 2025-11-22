@@ -33,9 +33,9 @@ export default function WishItemList({
 
 	return (
 		<>
-			<div className="flex justify-between items-center mb-6">
-				<h1 className="text-2xl font-bold">{title}</h1>
-				<div className="flex items-center space-x-2">
+			<div className="flex flex-wrap items-center justify-between gap-y-4 mb-6">
+				<h1 className="w-full text-2xl font-bold md:w-auto">{title}</h1>
+				<div className="flex w-full items-center justify-end space-x-2 md:w-auto">
 					<select
 						onChange={(e) => {
 							if (onCategoryFilterChange) {
