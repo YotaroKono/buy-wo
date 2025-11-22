@@ -4,6 +4,8 @@
 
 このアプリケーションは、ユーザーが買いたいものをリスト化し、優先度設定や購入履歴の管理などを通じて、より計画的で満足度の高い買い物体験を実現することを目的としています。
 
+
+
 ## 📚 プロジェクトドキュメント
 
 詳細な情報は以下のドキュメントを参照してください：
@@ -79,3 +81,12 @@ app/
 ## 📊 開発ロードマップ
 
 詳しい開発ロードマップは [REQUIREMENTS.md](./docs/REQUIREMENTS.md) を参照してください。
+
+# Release(Phase1)
+<img width="517" height="972" alt="Screenshot 2025-11-22 at 23 16 42" src="https://github.com/user-attachments/assets/38c07703-d695-4e20-aacc-e6dba90edc6d" />
+<img width="517" height="972" alt="Screenshot 2025-11-22 at 23 17 25" src="https://github.com/user-attachments/assets/57bcacdf-20f8-440e-ab4c-2c3f52b46b8e" />
+<img width="517" height="972" alt="Screenshot 2025-11-22 at 23 18 22" src="https://github.com/user-attachments/assets/fd2dc539-2dc7-4728-a840-2bc645a3a847" />
+<img width="381" height="990" alt="Screenshot 2025-11-22 at 23 20 30" src="https://github.com/user-attachments/assets/f9aadc9c-f7d6-4e53-9f7f-f49804b50e23" />
+<img width="381" height="990" alt="Screenshot 2025-11-22 at 23 20 45" src="https://github.com/user-attachments/assets/99a1aa10-4de5-4f66-a2e2-8237272b9598" />
+<img width="381" height="990" alt="Screenshot 2025-11-22 at 23 20 54" src="https://github.com/user-attachments/assets/c274abff-262f-42bc-90e5-61de2e0f5748" />
+
