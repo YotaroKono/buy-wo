@@ -1,8 +1,11 @@
-import type { LoaderFunctionArgs } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { createSupabaseToken, requireUser } from "~/models/auth.server";
-import { getWishItemWithImageUrl } from "~/models/wishItem.server";
+import {
+	deleteWishItem,
+	getWishItemWithImageUrl,
+} from "~/models/wishItem.server";
 import { getCategoryName } from "~/models/wishItem.server";
 import {
 	formatPrice,
@@ -31,6 +34,31 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 	);
 
 	return json({ item, categoryName });
+};
+
+export const action = async ({ request, params }: ActionFunctionArgs) => {
+	const user = await requireUser(request);
+	const supabaseToken = createSupabaseToken(user.userId);
+	const { id } = params;
+
+	if (!id) {
+		throw new Response("Item ID not found", { status: 404 });
+	}
+
+	if (request.method === "DELETE") {
+		try {
+			await deleteWishItem(id, user.userId, supabaseToken);
+			return redirect("/items");
+		} catch (error) {
+			// biome-ignore lint/suspicious/noConsoleLog: <explanation>
+			console.log({ error });
+			// エラーハンドリング: 失敗した場合はエラーメッセージを返す
+			return json({ error: "アイテムの削除に失敗しました。" }, { status: 500 });
+		}
+	}
+
+	// DELETE以外のメソッドは許可しない
+	return new Response("Method Not Allowed", { status: 405 });
 };
 
 export default function WishItemDetail() {

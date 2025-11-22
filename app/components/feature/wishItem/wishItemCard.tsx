@@ -22,7 +22,8 @@ export default function WishItemCard({ item }: WishItemCardProps) {
 	const isPurchased = status === "purchased";
 
 	// APIを呼び出すためのfetcher
-	const fetcher = useFetcher();
+	const toggleFetcher = useFetcher();
+	const deleteFetcher = useFetcher();
 
 	// 購入状態をトグルする関数
 	const handleToggleStatus = () => {
@@ -31,7 +32,7 @@ export default function WishItemCard({ item }: WishItemCardProps) {
 		setStatus(newStatus);
 
 		// APIを呼び出して実際にデータを更新
-		fetcher.submit(
+		toggleFetcher.submit(
 			{}, // データはサーバー側で処理するため空オブジェクト
 			{
 				method: "post",
@@ -39,6 +40,24 @@ export default function WishItemCard({ item }: WishItemCardProps) {
 			},
 		);
 	};
+
+	// 削除を実行する関数
+	const handleDelete = () => {
+		if (window.confirm("本当にこのアイテムを削除しますか？")) {
+			deleteFetcher.submit(
+				{},
+				{
+					method: "delete",
+					action: `/items/${item.id}`, // actionの宛先をアイテム詳細ページのルートにする
+				},
+			);
+		}
+	};
+
+	// Optimistic UI: 削除が実行されたら非表示にする
+	if (deleteFetcher.state !== "idle") {
+		return null;
+	}
 
 	return (
 		<div className="card bg-base-100 shadow-sm">
@@ -74,6 +93,15 @@ export default function WishItemCard({ item }: WishItemCardProps) {
 					<Link to={`/items/${item.id}`} className="btn btn-sm btn-outline">
 						詳細
 					</Link>
+
+					<button
+						type="button"
+						onClick={handleDelete}
+						className="btn btn-sm btn-error btn-outline"
+						disabled={deleteFetcher.state !== "idle"}
+					>
+						削除
+					</button>
 
 					<label className="swap">
 						<input
