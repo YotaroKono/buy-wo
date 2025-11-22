@@ -140,6 +140,56 @@ export async function getWishItems(
 
 	return itemsWithUrls;
 }
+
+export async function deleteWishItem(
+	itemId: string,
+	userId: string,
+	supabaseToken: string,
+): Promise<boolean> {
+	const supabase = getSupabaseClient(supabaseToken);
+	if (!supabase) {
+		throw new Error("Supabase clientの生成に失敗しました");
+	}
+
+	// 1. 削除対象のアイテム情報を取得して画像パスを確認
+	const { data: itemToDelete, error: fetchError } = await supabase
+		.from("wish_item")
+		.select("image_path")
+		.eq("id", itemId)
+		.eq("user_id", userId)
+		.single();
+
+	if (fetchError && fetchError.code !== "PGRST116") {
+		console.error("Error fetching wish item for deletion:", fetchError);
+		throw new Error("削除対象のアイテム取得に失敗しました");
+	}
+
+	// 2. ストレージから画像を削除 (画像パスが存在する場合)
+	if (itemToDelete?.image_path) {
+		const { error: storageError } = await supabase.storage
+			.from("wish-item-images")
+			.remove([itemToDelete.image_path]);
+
+		if (storageError) {
+			// ストレージからの画像削除に失敗しても、DBからのアイテム削除は試みる
+			console.error("Error deleting image from storage:", storageError);
+		}
+	}
+
+	// 3. データベースからアイテムを削除
+	const { error: deleteError } = await supabase
+		.from("wish_item")
+		.delete()
+		.eq("id", itemId)
+		.eq("user_id", userId);
+
+	if (deleteError) {
+		console.error("Error deleting wish item from database:", deleteError);
+		throw new Error("Wish itemの削除に失敗しました");
+	}
+
+	return true;
+}
 export async function createWishItem(
 	userId: string,
 	supabaseToken: string,
